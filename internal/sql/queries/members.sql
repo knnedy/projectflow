@@ -3,7 +3,7 @@ INSERT INTO "members" (
     "id",
     "role",
     "user_id",
-    "organization_id"
+    "organisation_id"
 ) VALUES (
     $1, $2, $3, $4
 )
@@ -18,7 +18,7 @@ WHERE "id" = $1;
 SELECT *
 FROM "members"
 WHERE "user_id" = $1
-  AND "organization_id" = $2;
+  AND "organisation_id" = $2;
 
 -- name: UpdateMember :one
 UPDATE "members"

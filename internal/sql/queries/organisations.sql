@@ -1,5 +1,5 @@
--- name: CreateOrganization :one
-INSERT INTO "organizations" (
+-- name: CreateOrganisation :one
+INSERT INTO "organisations" (
     "id",
     "name",
     "owner_id"
@@ -8,25 +8,25 @@ INSERT INTO "organizations" (
 )
 RETURNING *;
 
--- name: GetOrganizationById :one
+-- name: GetOrganisationById :one
 SELECT *
-FROM "organizations"
+FROM "organisations"
 WHERE "id" = $1;
 
--- name: GetOrganizationsByOwner :many
+-- name: GetOrganisationsByOwner :many
 SELECT *
-FROM "organizations"
+FROM "organisations"
 WHERE "owner_id" = $1
 ORDER BY "created_at" DESC;
 
--- name: UpdateOrganization :one
-UPDATE "organizations"
+-- name: UpdateOrganisation :one
+UPDATE "organisations"
 SET
     "name" = $2,
     "updated_at" = now()
 WHERE "id" = $1
 RETURNING *;
 
--- name: DeleteOrganization :exec
-DELETE FROM "organizations"
+-- name: DeleteOrganisation :exec
+DELETE FROM "organisations"
 WHERE "id" = $1;

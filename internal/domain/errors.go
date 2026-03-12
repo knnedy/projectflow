@@ -16,7 +16,7 @@ var (
 
 	// Permissions
 	ErrForbidden        = errors.New("forbidden")
-	ErrNotOrgMember     = errors.New("user is not a member of the organization")
+	ErrNotOrgMember     = errors.New("user is not a member of the organisation")
 	ErrNotProjectMember = errors.New("user is not a member of the project")
 )
 

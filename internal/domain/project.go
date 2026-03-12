@@ -14,7 +14,7 @@ type Project struct {
 type ProjectRepository interface {
 	Create(project *Project) (*Project, error)
 	GetByID(id string) (*Project, error)
-	GetByOrganization(orgID string) ([]*Project, error)
+	GetByOrganisation(orgID string) ([]*Project, error)
 	Update(project *Project) (*Project, error)
 	Delete(id string) error
 }

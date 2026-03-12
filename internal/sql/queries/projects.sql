@@ -3,7 +3,7 @@ INSERT INTO "projects" (
     "id",
     "name",
     "description",
-    "organization_id"
+    "organisation_id"
 ) VALUES (
     $1, $2, $3, $4
 )
@@ -14,10 +14,10 @@ SELECT *
 FROM "projects"
 WHERE "id" = $1;
 
--- name: GetProjectsByOrganization :many
+-- name: GetProjectsByOrganisation :many
 SELECT *
 FROM "projects"
-WHERE "organization_id" = $1
+WHERE "organisation_id" = $1
 ORDER BY "created_at" DESC;
 
 -- name: UpdateProject :one
