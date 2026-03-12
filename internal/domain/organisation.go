@@ -11,8 +11,9 @@ type Organisation struct {
 }
 
 type OrganisationRepository interface {
-	Create(org *Organisation) error
+	Create(org *Organisation) (*Organisation, error)
 	GetByID(id string) (*Organisation, error)
-	Update(org *Organisation) error
+	GetByOwner(ownerID string) ([]*Organisation, error)
+	Update(org *Organisation) (*Organisation, error)
 	Delete(id string) error
 }
