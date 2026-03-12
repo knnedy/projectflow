@@ -15,6 +15,7 @@ type UserRepository interface {
 	Create(user *User) error
 	GetByID(id string) (*User, error)
 	GetByEmail(email string) (*User, error)
-	Update(user *User) error
+	UpdateProfile(user *User) error
+	UpdatePassword(id string, password string) error
 	Delete(id string) error
 }

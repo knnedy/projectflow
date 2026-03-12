@@ -1,10 +1,10 @@
 -- +goose Up
-CREATE TABLE "user" (
+CREATE TABLE "users" (
 	"id" UUID PRIMARY KEY,
-	"name" text NOT NULL,
-	"email" text NOT NULL,
-	"password" text NOT NULL,
-	"created_at" timestamp (3) NOT NULL,
-	"updated_at" timestamp (3),
+	"name" TEXT NOT NULL,
+	"email" TEXT NOT NULL,
+	"password" TEXT NOT NULL,
+	"created_at" TIMESTAMP(3) NOT NULL DEFAULT now(),
+	"updated_at" TIMESTAMP(3),
 	CONSTRAINT "user_email_key" UNIQUE ("email")
 );
