@@ -5,7 +5,7 @@ CREATE TABLE "activity_log" (
     "user_id" UUID NOT NULL,
     "project_id" UUID NOT NULL,
     "target_id" UUID NOT NULL,
-    "created_at" timestamp (3) NOT NULL,
+    "timestamp" timestamp (3) NOT NULL,
     CONSTRAINT "activity_log_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE,
     CONSTRAINT "activity_log_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "project" ("id") ON DELETE CASCADE,
     CONSTRAINT "activity_log_target_id_fkey" FOREIGN KEY ("target_id") REFERENCES "issue" ("id") ON DELETE CASCADE
