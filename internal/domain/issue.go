@@ -32,9 +32,9 @@ type Issue struct {
 }
 
 type IssueRepository interface {
-	Create(issue *Issue) error
+	Create(issue *Issue) (*Issue, error)
 	GetByID(id string) (*Issue, error)
 	ListByProject(projectID string) ([]*Issue, error)
-	Update(issue *Issue) error
+	Update(issue *Issue) (*Issue, error)
 	Delete(id string) error
 }
