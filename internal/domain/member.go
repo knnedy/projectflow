@@ -8,7 +8,7 @@ type Member struct {
 	UserID         string     `json:"userId"`
 	OrganisationID string     `json:"organisationId"`
 	CreatedAt      time.Time  `json:"createdAt"`
-	UpdatedAt      *time.Time `json:"updatedAt"`
+	UpdatedAt      *time.Time `json:"updatedAt,omitempty"`
 }
 
 type MemberRepository interface {

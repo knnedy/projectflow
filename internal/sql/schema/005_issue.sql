@@ -4,6 +4,7 @@ CREATE TABLE "issue" (
     "title" text NOT NULL,
     "description" text,
     "status" text NOT NULL,
+    "priority" text NOT NULL,
     "project_id" UUID NOT NULL,
     "reporter_id" UUID NOT NULL,
     "assignee_id" UUID,

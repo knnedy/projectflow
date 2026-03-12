@@ -5,9 +5,9 @@ import "time"
 type Organisation struct {
 	ID        string     `json:"id"`
 	Name      string     `json:"name"`
-	CreatedAt time.Time  `json:"createdAt"`
-	UpdatedAt *time.Time `json:"updatedAt"`
 	OwnerID   string     `json:"ownerId"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 }
 
 type OrganisationRepository interface {

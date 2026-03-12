@@ -8,7 +8,7 @@ type User struct {
 	Email          string     `json:"email"`
 	HashedPassword string     `json:"password"`
 	CreatedAt      time.Time  `json:"createdAt"`
-	UpdatedAt      *time.Time `json:"updatedAt"`
+	UpdatedAt      *time.Time `json:"updatedAt,omitempty"`
 }
 
 type UserRepository interface {
