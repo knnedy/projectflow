@@ -2,9 +2,17 @@ package domain
 
 import "time"
 
+type MemberRole string
+
+const (
+	MemberRoleOwner  MemberRole = "owner"
+	MemberRoleAdmin  MemberRole = "admin"
+	MemberRoleMember MemberRole = "member"
+)
+
 type Member struct {
 	ID             string     `json:"id"`
-	Role           string     `json:"role"`
+	Role           MemberRole `json:"role"`
 	UserID         string     `json:"userId"`
 	OrganisationID string     `json:"organisationId"`
 	CreatedAt      time.Time  `json:"createdAt"`
@@ -12,9 +20,9 @@ type Member struct {
 }
 
 type MemberRepository interface {
-	Create(member *Member) error
+	Create(member *Member) (*Member, error)
 	GetByID(id string) (*Member, error)
 	GetByUserAndOrg(userID, orgID string) (*Member, error)
-	Update(member *Member) error
+	Update(member *Member) (*Member, error)
 	Delete(id string) error
 }
