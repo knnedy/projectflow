@@ -6,5 +6,8 @@ CREATE TABLE "users" (
 	"password" TEXT NOT NULL,
 	"created_at" TIMESTAMP(3) NOT NULL DEFAULT now(),
 	"updated_at" TIMESTAMP(3),
-	CONSTRAINT "user_email_key" UNIQUE ("email")
+	CONSTRAINT "users_email_key" UNIQUE ("email")
 );
+
+-- +goose Down
+DROP TABLE "users";
