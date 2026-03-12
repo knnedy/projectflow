@@ -12,9 +12,9 @@ type Comment struct {
 }
 
 type CommentRepository interface {
-	Create(comment *Comment) error
+	Create(comment *Comment) (*Comment, error)
 	GetByID(id string) (*Comment, error)
-	Update(comment *Comment) error
-	Delete(id string) error
 	ListByIssueID(issueID string) ([]*Comment, error)
+	Update(comment *Comment) (*Comment, error)
+	Delete(id string) error
 }
