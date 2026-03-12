@@ -12,6 +12,6 @@ type ActivityLog struct {
 }
 
 type ActivityLogRepository interface {
-	Create(activity *ActivityLog) error
+	Create(activity *ActivityLog) (*ActivityLog, error)
 	ListByProjectID(projectID string) ([]*ActivityLog, error)
 }
