@@ -53,7 +53,7 @@ func (tm *TokenManager) ValidateAccessToken(tokenStr string) (*AccessTokenClaims
 
 	claims, ok := token.Claims.(*AccessTokenClaims)
 	if !ok || !token.Valid {
-		return nil, jwt.ErrInvalidKey
+		return nil, jwt.ErrTokenSignatureInvalid
 	}
 
 	return claims, nil
