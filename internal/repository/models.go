@@ -65,6 +65,15 @@ type Project struct {
 	UpdatedAt      pgtype.Timestamp
 }
 
+type RefreshToken struct {
+	ID        pgtype.UUID
+	UserID    pgtype.UUID
+	Token     string
+	ExpiresAt pgtype.Timestamp
+	CreatedAt pgtype.Timestamp
+	RevokedAt pgtype.Timestamp
+}
+
 type User struct {
 	ID        pgtype.UUID
 	Name      string
