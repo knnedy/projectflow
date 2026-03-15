@@ -19,6 +19,15 @@ var (
 	ErrForbidden        = errors.New("forbidden")
 	ErrNotOrgMember     = errors.New("user is not a member of the organisation")
 	ErrNotProjectMember = errors.New("user is not a member of the project")
+
+	// Unprocessable entity
+	ErrAlreadyExists = errors.New("resource already exists")
+
+	// Issue status transitions
+	ErrInvalidStatusTransition = errors.New("invalid issue status transition")
+
+	// Organization admin constraints
+	ErrCannotRemoveLastAdmin = errors.New("cannot remove the last admin of an organization")
 )
 
 // ValidationError carries field-level detail on top of ErrValidation
