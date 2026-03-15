@@ -17,7 +17,7 @@ type RefreshToken struct {
 	RevokedAt *time.Time
 }
 
-func GenerateRefreshToken(userID uuid.UUID) (RefreshToken, error) {
+func (tm *TokenManager) GenerateRefreshToken(userID uuid.UUID) (RefreshToken, error) {
 	now := time.Now()
 	return RefreshToken{
 		ID:        uuid.New(),

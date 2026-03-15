@@ -10,8 +10,6 @@ const accessTokenDuration = 15 * time.Minute
 
 type AccessTokenClaims struct {
 	UserID string `json:"user_id"`
-	OrgID  string `json:"org_id"`
-	Role   string `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -25,11 +23,9 @@ func NewTokenManager(secret string) *TokenManager {
 	}
 }
 
-func (tm *TokenManager) GenerateAccessToken(userID, orgID, role string) (string, error) {
+func (tm *TokenManager) GenerateAccessToken(userID string) (string, error) {
 	claims := AccessTokenClaims{
 		UserID: userID,
-		OrgID:  orgID,
-		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessTokenDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
