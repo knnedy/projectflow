@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -16,13 +17,17 @@ type AuthService struct {
 	db       *repository.Queries
 	tokens   *token.TokenManager
 	validate *validator.Validate
+	trans    ut.Translator
 }
 
 func NewAuthService(db *repository.Queries, tokens *token.TokenManager) *AuthService {
+	validate, trans := newValidator()
+
 	return &AuthService{
 		db:       db,
 		tokens:   tokens,
-		validate: validator.New(),
+		validate: validate,
+		trans:    trans,
 	}
 }
 
@@ -80,12 +85,7 @@ func (s *AuthService) generateAuthTokens(ctx context.Context, user repository.Us
 func (s *AuthService) Register(ctx context.Context, input RegisterInput) (AuthResult, error) {
 	// validate input
 	if err := s.validate.Struct(input); err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		firstErr := validationErrors[0]
-		return AuthResult{}, &domain.ValidationError{
-			Field:   firstErr.Field(),
-			Message: firstErr.Tag(),
-		}
+		return AuthResult{}, formatValidationError(err, s.trans)
 	}
 
 	// check if email already exists
@@ -117,12 +117,7 @@ func (s *AuthService) Register(ctx context.Context, input RegisterInput) (AuthRe
 func (s *AuthService) Login(ctx context.Context, input LoginInput) (AuthResult, error) {
 	// validate input
 	if err := s.validate.Struct(input); err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		firstErr := validationErrors[0]
-		return AuthResult{}, &domain.ValidationError{
-			Field:   firstErr.Field(),
-			Message: firstErr.Tag(),
-		}
+		return AuthResult{}, formatValidationError(err, s.trans)
 	}
 
 	// get user by email
