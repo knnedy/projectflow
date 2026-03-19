@@ -1,7 +1,9 @@
 -- +goose Up
+CREATE TYPE member_role AS ENUM ('OWNER', 'ADMIN', 'MEMBER');
+
 CREATE TABLE "members" (
     "id" UUID PRIMARY KEY,
-    "role" TEXT NOT NULL,
+    "role" member_role NOT NULL,
     "user_id" UUID NOT NULL,
     "organisation_id" UUID NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT now(),
@@ -14,3 +16,4 @@ CREATE TABLE "members" (
 
 -- +goose Down
 DROP TABLE "members";
+DROP TYPE member_role;

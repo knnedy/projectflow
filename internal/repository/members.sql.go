@@ -25,7 +25,7 @@ RETURNING id, role, user_id, organisation_id, created_at, updated_at
 
 type CreateMemberParams struct {
 	ID             pgtype.UUID
-	Role           string
+	Role           MemberRole
 	UserID         pgtype.UUID
 	OrganisationID pgtype.UUID
 }
@@ -116,7 +116,7 @@ RETURNING id, role, user_id, organisation_id, created_at, updated_at
 
 type UpdateMemberParams struct {
 	ID   pgtype.UUID
-	Role string
+	Role MemberRole
 }
 
 func (q *Queries) UpdateMember(ctx context.Context, arg UpdateMemberParams) (Member, error) {
