@@ -126,26 +126,19 @@ UPDATE "users"
 SET
     "name" = $2,
     "email" = $3,
-    "password" = $4,
     "updated_at" = now()    
 WHERE "id" = $1
 RETURNING id, name, email, password, created_at, updated_at
 `
 
 type UpdateUserProfileParams struct {
-	ID       pgtype.UUID
-	Name     string
-	Email    string
-	Password string
+	ID    pgtype.UUID
+	Name  string
+	Email string
 }
 
 func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateUserProfile,
-		arg.ID,
-		arg.Name,
-		arg.Email,
-		arg.Password,
-	)
+	row := q.db.QueryRow(ctx, updateUserProfile, arg.ID, arg.Name, arg.Email)
 	var i User
 	err := row.Scan(
 		&i.ID,
