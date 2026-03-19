@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"slices"
 
 	"github.com/knnedy/projectflow/internal/domain"
 	"github.com/knnedy/projectflow/internal/handler"
@@ -33,10 +34,5 @@ func RequireRole(allowedRoles ...repository.MemberRole) func(http.Handler) http.
 
 // hasRole checks if the member's role is in the allowed roles
 func hasRole(memberRole repository.MemberRole, allowedRoles []repository.MemberRole) bool {
-	for _, role := range allowedRoles {
-		if memberRole == role {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(allowedRoles, memberRole)
 }
