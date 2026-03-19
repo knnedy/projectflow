@@ -24,8 +24,8 @@ type errorResponse struct {
 	Error   errorDetail `json:"error"`
 }
 
-// writeJSON writes a success response with the given status code and data
-func writeJSON(w http.ResponseWriter, statusCode int, data any) {
+// WriteJSON writes a success response with the given status code and data
+func WriteJSON(w http.ResponseWriter, statusCode int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(successResponse{
@@ -34,8 +34,8 @@ func writeJSON(w http.ResponseWriter, statusCode int, data any) {
 	})
 }
 
-// writeError writes an error response mapping domain errors to HTTP status codes
-func writeError(w http.ResponseWriter, err error) {
+// WriteError writes an error response mapping domain errors to HTTP status codes
+func WriteError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var status int
@@ -65,6 +65,16 @@ func writeError(w http.ResponseWriter, err error) {
 		status = http.StatusUnauthorized
 		detail.Code = "INVALID_TOKEN"
 		detail.Message = "invalid or expired token"
+
+	case errors.Is(err, domain.ErrMissingToken):
+		status = http.StatusUnauthorized
+		detail.Code = "MISSING_TOKEN"
+		detail.Message = "missing authorization token"
+
+	case errors.Is(err, domain.ErrMalformedToken):
+		status = http.StatusUnauthorized
+		detail.Code = "MALFORMED_TOKEN"
+		detail.Message = "malformed authorization token"
 
 	case errors.Is(err, domain.ErrUnauthorized):
 		status = http.StatusUnauthorized

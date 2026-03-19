@@ -84,18 +84,18 @@ func clearRefreshTokenCookie(w http.ResponseWriter) {
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var input service.RegisterInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 
 	result, err := h.auth.Register(r.Context(), input)
 	if err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 
 	setRefreshTokenCookie(w, result.RefreshToken)
-	writeJSON(w, http.StatusCreated, toAuthDataResponse(result))
+	WriteJSON(w, http.StatusCreated, toAuthDataResponse(result))
 }
 
 // Login godoc
@@ -111,18 +111,18 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var input service.LoginInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 
 	result, err := h.auth.Login(r.Context(), input)
 	if err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 
 	setRefreshTokenCookie(w, result.RefreshToken)
-	writeJSON(w, http.StatusOK, toAuthDataResponse(result))
+	WriteJSON(w, http.StatusOK, toAuthDataResponse(result))
 }
 
 // RefreshAccessToken godoc
@@ -136,18 +136,18 @@ func (h *AuthHandler) RefreshAccessToken(w http.ResponseWriter, r *http.Request)
 	// read refresh token from httponly cookie
 	cookie, err := r.Cookie("refresh_token")
 	if err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 
 	result, err := h.auth.RefreshAccessToken(r.Context(), cookie.Value)
 	if err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 
 	setRefreshTokenCookie(w, result.RefreshToken)
-	writeJSON(w, http.StatusOK, toAuthDataResponse(result))
+	WriteJSON(w, http.StatusOK, toAuthDataResponse(result))
 }
 
 // Logout godoc
@@ -161,15 +161,15 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	// read refresh token from httponly cookie
 	cookie, err := r.Cookie("refresh_token")
 	if err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 
 	if err := h.auth.Logout(r.Context(), cookie.Value); err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 
 	clearRefreshTokenCookie(w)
-	writeJSON(w, http.StatusOK, nil)
+	WriteJSON(w, http.StatusOK, nil)
 }

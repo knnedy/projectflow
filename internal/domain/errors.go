@@ -13,7 +13,6 @@ var (
 	ErrUnauthorized       = errors.New("unauthorized")
 	ErrEmailAlreadyExists = errors.New("email already exists")
 	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrInvalidToken       = errors.New("invalid or expired token")
 
 	// Permissions
 	ErrForbidden        = errors.New("forbidden")
@@ -22,6 +21,11 @@ var (
 
 	// Unprocessable entity
 	ErrAlreadyExists = errors.New("resource already exists")
+
+	// Token errors
+	ErrMissingToken   = errors.New("missing authorization token")
+	ErrMalformedToken = errors.New("malformed authorization token")
+	ErrInvalidToken   = errors.New("invalid or expired token")
 
 	// Issue status transitions
 	ErrInvalidStatusTransition = errors.New("invalid issue status transition")
