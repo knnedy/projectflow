@@ -162,6 +162,18 @@ type Comment struct {
 	UpdatedAt pgtype.Timestamp
 }
 
+type Invitation struct {
+	ID             pgtype.UUID
+	Email          string
+	OrganisationID pgtype.UUID
+	Role           MemberRole
+	Token          string
+	InvitedBy      pgtype.UUID
+	ExpiresAt      pgtype.Timestamp
+	AcceptedAt     pgtype.Timestamp
+	CreatedAt      pgtype.Timestamp
+}
+
 type Issue struct {
 	ID          pgtype.UUID
 	Title       string
