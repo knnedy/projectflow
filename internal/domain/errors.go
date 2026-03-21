@@ -19,7 +19,7 @@ var (
 	ErrNotOrgMember     = errors.New("user is not a member of the organisation")
 	ErrNotProjectMember = errors.New("user is not a member of the project")
 
-	// Unprocessable entity
+	// Conflict
 	ErrAlreadyExists = errors.New("resource already exists")
 
 	// Token errors
@@ -30,8 +30,14 @@ var (
 	// Issue status transitions
 	ErrInvalidStatusTransition = errors.New("invalid issue status transition")
 
-	// Organization admin constraints
+	// Organisation admin constraints
 	ErrCannotRemoveLastAdmin = errors.New("cannot remove the last admin of an organization")
+
+	// Database
+	ErrDatabase = errors.New("a database error occurred")
+
+	// Internal server errors
+	ErrInternal = errors.New("an internal server error occurred")
 )
 
 // ValidationError carries field-level detail on top of ErrValidation

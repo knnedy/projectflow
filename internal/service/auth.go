@@ -22,7 +22,6 @@ type AuthService struct {
 
 func NewAuthService(db *repository.Queries, tokens *token.TokenManager) *AuthService {
 	validate, trans := newValidator()
-
 	return &AuthService{
 		db:       db,
 		tokens:   tokens,
@@ -53,7 +52,7 @@ func (s *AuthService) generateAuthTokens(ctx context.Context, user repository.Us
 	// generate access token
 	accessToken, err := s.tokens.GenerateAccessToken(user.ID.String())
 	if err != nil {
-		return AuthResult{}, err
+		return AuthResult{}, domain.ErrInternal
 	}
 
 	// generate refresh token
@@ -61,7 +60,7 @@ func (s *AuthService) generateAuthTokens(ctx context.Context, user repository.Us
 		uuid.UUID(user.ID.Bytes),
 	)
 	if err != nil {
-		return AuthResult{}, err
+		return AuthResult{}, domain.ErrInternal
 	}
 
 	// save refresh token to DB
@@ -72,7 +71,7 @@ func (s *AuthService) generateAuthTokens(ctx context.Context, user repository.Us
 		ExpiresAt: pgtype.Timestamp{Time: refreshToken.ExpiresAt, Valid: true},
 	})
 	if err != nil {
-		return AuthResult{}, err
+		return AuthResult{}, domain.ErrDatabase
 	}
 
 	return AuthResult{
@@ -97,7 +96,7 @@ func (s *AuthService) Register(ctx context.Context, input RegisterInput) (AuthRe
 	// hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return AuthResult{}, err
+		return AuthResult{}, domain.ErrInternal
 	}
 
 	// create user
@@ -108,7 +107,7 @@ func (s *AuthService) Register(ctx context.Context, input RegisterInput) (AuthRe
 		Password: string(hashedPassword),
 	})
 	if err != nil {
-		return AuthResult{}, err
+		return AuthResult{}, domain.ErrDatabase
 	}
 
 	return s.generateAuthTokens(ctx, user)
@@ -143,9 +142,8 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, refreshToken strin
 	}
 
 	// revoke current refresh token - rotation
-	err = s.db.RevokeRefreshToken(ctx, refreshToken)
-	if err != nil {
-		return AuthResult{}, err
+	if err := s.db.RevokeRefreshToken(ctx, refreshToken); err != nil {
+		return AuthResult{}, domain.ErrDatabase
 	}
 
 	// get user
@@ -159,5 +157,8 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, refreshToken strin
 
 func (s *AuthService) Logout(ctx context.Context, refreshToken string) error {
 	// revoke refresh token
-	return s.db.RevokeRefreshToken(ctx, refreshToken)
+	if err := s.db.RevokeRefreshToken(ctx, refreshToken); err != nil {
+		return domain.ErrDatabase
+	}
+	return nil
 }

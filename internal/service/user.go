@@ -78,7 +78,7 @@ func (s *UserService) UpdateMe(ctx context.Context, userID string, input UpdateP
 		Email: input.Email,
 	})
 	if err != nil {
-		return repository.User{}, err
+		return repository.User{}, domain.ErrDatabase
 	}
 
 	return user, nil
@@ -111,7 +111,7 @@ func (s *UserService) UpdatePassword(ctx context.Context, userID string, input U
 	// hash new password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return domain.ErrInternal
 	}
 
 	// update password in DB
@@ -119,8 +119,11 @@ func (s *UserService) UpdatePassword(ctx context.Context, userID string, input U
 		ID:       pgtype.UUID{Bytes: parsedID, Valid: true},
 		Password: string(hashedPassword),
 	})
+	if err != nil {
+		return domain.ErrDatabase
+	}
 
-	return err
+	return nil
 }
 
 func (s *UserService) DeleteMe(ctx context.Context, userID string) error {
@@ -131,5 +134,9 @@ func (s *UserService) DeleteMe(ctx context.Context, userID string) error {
 	}
 
 	// delete user from DB
-	return s.db.DeleteUser(ctx, pgtype.UUID{Bytes: parsedID, Valid: true})
+	if err := s.db.DeleteUser(ctx, pgtype.UUID{Bytes: parsedID, Valid: true}); err != nil {
+		return domain.ErrDatabase
+	}
+
+	return nil
 }
