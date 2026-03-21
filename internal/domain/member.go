@@ -1,22 +1,18 @@
 package domain
 
-import "time"
+import (
+	"time"
 
-type MemberRole string
-
-const (
-	MemberRoleOwner  MemberRole = "OWNER"
-	MemberRoleAdmin  MemberRole = "ADMIN"
-	MemberRoleMember MemberRole = "MEMBER"
+	"github.com/knnedy/projectflow/internal/repository"
 )
 
 type Member struct {
-	ID             string     `json:"id"`
-	Role           MemberRole `json:"role"`
-	UserID         string     `json:"userId"`
-	OrganisationID string     `json:"organisationId"`
-	CreatedAt      time.Time  `json:"createdAt"`
-	UpdatedAt      *time.Time `json:"updatedAt,omitempty"`
+	ID             string                `json:"id"`
+	Role           repository.MemberRole `json:"role"`
+	UserID         string                `json:"userId"`
+	OrganisationID string                `json:"organisationId"`
+	CreatedAt      time.Time             `json:"createdAt"`
+	UpdatedAt      *time.Time            `json:"updatedAt,omitempty"`
 }
 
 type MemberRepository interface {
