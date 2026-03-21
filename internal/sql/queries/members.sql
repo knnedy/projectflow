@@ -20,6 +20,18 @@ FROM "members"
 WHERE "user_id" = $1
   AND "organisation_id" = $2;
 
+-- name: GetMembersByOrg :many
+SELECT *
+FROM "members"
+WHERE "organisation_id" = $1
+ORDER BY "created_at" ASC;
+
+-- name: GetOwnerAndAdminCountByOrg :one
+SELECT COUNT(*) 
+FROM "members"
+WHERE "organisation_id" = $1
+AND "role" IN ('OWNER', 'ADMIN');
+
 -- name: UpdateMember :one
 UPDATE "members"
 SET

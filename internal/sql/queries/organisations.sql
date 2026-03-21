@@ -13,11 +13,12 @@ SELECT *
 FROM "organisations"
 WHERE "id" = $1;
 
--- name: GetOrganisationsByOwner :many
-SELECT *
-FROM "organisations"
-WHERE "owner_id" = $1
-ORDER BY "created_at" DESC;
+-- name: GetOrganisationsByUser :many
+SELECT o.*
+FROM "organisations" o
+INNER JOIN "members" m ON m.organisation_id = o.id
+WHERE m.user_id = $1
+ORDER BY o.created_at DESC;
 
 -- name: UpdateOrganisation :one
 UPDATE "organisations"

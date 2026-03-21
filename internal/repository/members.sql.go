@@ -105,6 +105,54 @@ func (q *Queries) GetMemberByUserAndOrg(ctx context.Context, arg GetMemberByUser
 	return i, err
 }
 
+const getMembersByOrg = `-- name: GetMembersByOrg :many
+SELECT id, role, user_id, organisation_id, created_at, updated_at
+FROM "members"
+WHERE "organisation_id" = $1
+ORDER BY "created_at" ASC
+`
+
+func (q *Queries) GetMembersByOrg(ctx context.Context, organisationID pgtype.UUID) ([]Member, error) {
+	rows, err := q.db.Query(ctx, getMembersByOrg, organisationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Member
+	for rows.Next() {
+		var i Member
+		if err := rows.Scan(
+			&i.ID,
+			&i.Role,
+			&i.UserID,
+			&i.OrganisationID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getOwnerAndAdminCountByOrg = `-- name: GetOwnerAndAdminCountByOrg :one
+SELECT COUNT(*) 
+FROM "members"
+WHERE "organisation_id" = $1
+AND "role" IN ('OWNER', 'ADMIN')
+`
+
+func (q *Queries) GetOwnerAndAdminCountByOrg(ctx context.Context, organisationID pgtype.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, getOwnerAndAdminCountByOrg, organisationID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const updateMember = `-- name: UpdateMember :one
 UPDATE "members"
 SET

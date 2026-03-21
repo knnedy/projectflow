@@ -70,15 +70,16 @@ func (q *Queries) GetOrganisationById(ctx context.Context, id pgtype.UUID) (Orga
 	return i, err
 }
 
-const getOrganisationsByOwner = `-- name: GetOrganisationsByOwner :many
-SELECT id, name, owner_id, created_at, updated_at
-FROM "organisations"
-WHERE "owner_id" = $1
-ORDER BY "created_at" DESC
+const getOrganisationsByUser = `-- name: GetOrganisationsByUser :many
+SELECT o.id, o.name, o.owner_id, o.created_at, o.updated_at
+FROM "organisations" o
+INNER JOIN "members" m ON m.organisation_id = o.id
+WHERE m.user_id = $1
+ORDER BY o.created_at DESC
 `
 
-func (q *Queries) GetOrganisationsByOwner(ctx context.Context, ownerID pgtype.UUID) ([]Organisation, error) {
-	rows, err := q.db.Query(ctx, getOrganisationsByOwner, ownerID)
+func (q *Queries) GetOrganisationsByUser(ctx context.Context, userID pgtype.UUID) ([]Organisation, error) {
+	rows, err := q.db.Query(ctx, getOrganisationsByUser, userID)
 	if err != nil {
 		return nil, err
 	}
