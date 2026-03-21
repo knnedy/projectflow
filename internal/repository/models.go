@@ -11,6 +11,96 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type IssuePriority string
+
+const (
+	IssuePriorityNOPRIORITY IssuePriority = "NO_PRIORITY"
+	IssuePriorityLOW        IssuePriority = "LOW"
+	IssuePriorityMEDIUM     IssuePriority = "MEDIUM"
+	IssuePriorityHIGH       IssuePriority = "HIGH"
+)
+
+func (e *IssuePriority) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = IssuePriority(s)
+	case string:
+		*e = IssuePriority(s)
+	default:
+		return fmt.Errorf("unsupported scan type for IssuePriority: %T", src)
+	}
+	return nil
+}
+
+type NullIssuePriority struct {
+	IssuePriority IssuePriority
+	Valid         bool // Valid is true if IssuePriority is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullIssuePriority) Scan(value interface{}) error {
+	if value == nil {
+		ns.IssuePriority, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.IssuePriority.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullIssuePriority) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.IssuePriority), nil
+}
+
+type IssueStatus string
+
+const (
+	IssueStatusBACKLOG    IssueStatus = "BACKLOG"
+	IssueStatusTODO       IssueStatus = "TODO"
+	IssueStatusINPROGRESS IssueStatus = "IN_PROGRESS"
+	IssueStatusINREVIEW   IssueStatus = "IN_REVIEW"
+	IssueStatusDONE       IssueStatus = "DONE"
+	IssueStatusCANCELLED  IssueStatus = "CANCELLED"
+)
+
+func (e *IssueStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = IssueStatus(s)
+	case string:
+		*e = IssueStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for IssueStatus: %T", src)
+	}
+	return nil
+}
+
+type NullIssueStatus struct {
+	IssueStatus IssueStatus
+	Valid       bool // Valid is true if IssueStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullIssueStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.IssueStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.IssueStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullIssueStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.IssueStatus), nil
+}
+
 type MemberRole string
 
 const (
@@ -76,8 +166,8 @@ type Issue struct {
 	ID          pgtype.UUID
 	Title       string
 	Description pgtype.Text
-	Status      string
-	Priority    string
+	Status      IssueStatus
+	Priority    IssuePriority
 	ProjectID   pgtype.UUID
 	ReporterID  pgtype.UUID
 	AssigneeID  pgtype.UUID

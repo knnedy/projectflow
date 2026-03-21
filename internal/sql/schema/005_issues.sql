@@ -1,10 +1,13 @@
 -- +goose Up
+CREATE TYPE issue_status AS ENUM ('BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'CANCELLED');
+CREATE TYPE issue_priority AS ENUM ('NO_PRIORITY', 'LOW', 'MEDIUM', 'HIGH');
+
 CREATE TABLE "issues" (
     "id" UUID PRIMARY KEY,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "status" TEXT NOT NULL,
-    "priority" TEXT NOT NULL,
+    "status" issue_status NOT NULL DEFAULT 'BACKLOG',
+    "priority" issue_priority NOT NULL DEFAULT 'NO_PRIORITY',
     "project_id" UUID NOT NULL,
     "reporter_id" UUID NOT NULL,
     "assignee_id" UUID,
@@ -20,3 +23,5 @@ CREATE TABLE "issues" (
 
 -- +goose Down
 DROP TABLE "issues";
+DROP TYPE issue_priority;
+DROP TYPE issue_status;

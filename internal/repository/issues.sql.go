@@ -31,8 +31,8 @@ type CreateIssueParams struct {
 	ID          pgtype.UUID
 	Title       string
 	Description pgtype.Text
-	Status      string
-	Priority    string
+	Status      IssueStatus
+	Priority    IssuePriority
 	ProjectID   pgtype.UUID
 	ReporterID  pgtype.UUID
 	AssigneeID  pgtype.UUID
@@ -154,8 +154,8 @@ type UpdateIssueParams struct {
 	ID          pgtype.UUID
 	Title       string
 	Description pgtype.Text
-	Status      string
-	Priority    string
+	Status      IssueStatus
+	Priority    IssuePriority
 	AssigneeID  pgtype.UUID
 }
 
