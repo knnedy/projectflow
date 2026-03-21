@@ -24,14 +24,21 @@ FROM "issues"
 WHERE "project_id" = $1
 ORDER BY "created_at" DESC;
 
--- name: UpdateIssue :one
+-- name: UpdateIssueStatus :one
+UPDATE "issues"
+SET
+    "status" = $2,
+    "updated_at" = now()
+WHERE "id" = $1
+RETURNING *;
+
+-- name: UpdateIssueDetails :one
 UPDATE "issues"
 SET
     "title" = $2,
     "description" = $3,
-    "status" = $4,
-    "priority" = $5,
-    "assignee_id" = $6,
+    "priority" = $4,
+    "assignee_id" = $5,
     "updated_at" = now()
 WHERE "id" = $1
 RETURNING *;

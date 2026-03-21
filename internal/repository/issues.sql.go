@@ -137,37 +137,66 @@ func (q *Queries) ListIssuesByProject(ctx context.Context, projectID pgtype.UUID
 	return items, nil
 }
 
-const updateIssue = `-- name: UpdateIssue :one
+const updateIssueDetails = `-- name: UpdateIssueDetails :one
 UPDATE "issues"
 SET
     "title" = $2,
     "description" = $3,
-    "status" = $4,
-    "priority" = $5,
-    "assignee_id" = $6,
+    "priority" = $4,
+    "assignee_id" = $5,
     "updated_at" = now()
 WHERE "id" = $1
 RETURNING id, title, description, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at
 `
 
-type UpdateIssueParams struct {
+type UpdateIssueDetailsParams struct {
 	ID          pgtype.UUID
 	Title       string
 	Description pgtype.Text
-	Status      IssueStatus
 	Priority    IssuePriority
 	AssigneeID  pgtype.UUID
 }
 
-func (q *Queries) UpdateIssue(ctx context.Context, arg UpdateIssueParams) (Issue, error) {
-	row := q.db.QueryRow(ctx, updateIssue,
+func (q *Queries) UpdateIssueDetails(ctx context.Context, arg UpdateIssueDetailsParams) (Issue, error) {
+	row := q.db.QueryRow(ctx, updateIssueDetails,
 		arg.ID,
 		arg.Title,
 		arg.Description,
-		arg.Status,
 		arg.Priority,
 		arg.AssigneeID,
 	)
+	var i Issue
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Description,
+		&i.Status,
+		&i.Priority,
+		&i.ProjectID,
+		&i.ReporterID,
+		&i.AssigneeID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateIssueStatus = `-- name: UpdateIssueStatus :one
+UPDATE "issues"
+SET
+    "status" = $2,
+    "updated_at" = now()
+WHERE "id" = $1
+RETURNING id, title, description, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at
+`
+
+type UpdateIssueStatusParams struct {
+	ID     pgtype.UUID
+	Status IssueStatus
+}
+
+func (q *Queries) UpdateIssueStatus(ctx context.Context, arg UpdateIssueStatusParams) (Issue, error) {
+	row := q.db.QueryRow(ctx, updateIssueStatus, arg.ID, arg.Status)
 	var i Issue
 	err := row.Scan(
 		&i.ID,
