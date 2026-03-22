@@ -12,15 +12,17 @@ import (
 )
 
 type OrgService struct {
-	db       *repository.Queries
+	db       *repository.DB
+	queries  *repository.Queries
 	validate *validator.Validate
 	trans    ut.Translator
 }
 
-func NewOrgService(db *repository.Queries) *OrgService {
+func NewOrgService(db *repository.DB) *OrgService {
 	validate, trans := newValidator()
 	return &OrgService{
 		db:       db,
+		queries:  db.Queries(),
 		validate: validate,
 		trans:    trans,
 	}
@@ -32,10 +34,6 @@ type CreateOrgInput struct {
 
 type UpdateOrgInput struct {
 	Name string `validate:"required,min=2,max=100"`
-}
-
-type UpdateMemberRoleInput struct {
-	Role repository.MemberRole `validate:"required,oneof=OWNER ADMIN MEMBER"`
 }
 
 func (s *OrgService) Create(ctx context.Context, userID string, input CreateOrgInput) (repository.Organisation, error) {
@@ -51,26 +49,37 @@ func (s *OrgService) Create(ctx context.Context, userID string, input CreateOrgI
 	}
 
 	orgID := uuid.New()
+	var org repository.Organisation
 
-	// create organisation
-	org, err := s.db.CreateOrganisation(ctx, repository.CreateOrganisationParams{
-		ID:      pgtype.UUID{Bytes: orgID, Valid: true},
-		Name:    input.Name,
-		OwnerID: pgtype.UUID{Bytes: parsedUserID, Valid: true},
+	// create organisation and add creator as owner in a single transaction
+	err = s.db.WithTransaction(ctx, func(q *repository.Queries) error {
+		var err error
+
+		// create organisation
+		org, err = q.CreateOrganisation(ctx, repository.CreateOrganisationParams{
+			ID:      pgtype.UUID{Bytes: orgID, Valid: true},
+			Name:    input.Name,
+			OwnerID: pgtype.UUID{Bytes: parsedUserID, Valid: true},
+		})
+		if err != nil {
+			return domain.ErrDatabase
+		}
+
+		// automatically add creator as owner member
+		_, err = q.CreateMember(ctx, repository.CreateMemberParams{
+			ID:             pgtype.UUID{Bytes: uuid.New(), Valid: true},
+			Role:           repository.MemberRoleOWNER,
+			UserID:         pgtype.UUID{Bytes: parsedUserID, Valid: true},
+			OrganisationID: pgtype.UUID{Bytes: orgID, Valid: true},
+		})
+		if err != nil {
+			return domain.ErrDatabase
+		}
+
+		return nil
 	})
 	if err != nil {
-		return repository.Organisation{}, domain.ErrDatabase
-	}
-
-	// automatically add creator as owner member
-	_, err = s.db.CreateMember(ctx, repository.CreateMemberParams{
-		ID:             pgtype.UUID{Bytes: uuid.New(), Valid: true},
-		Role:           repository.MemberRoleOWNER,
-		UserID:         pgtype.UUID{Bytes: parsedUserID, Valid: true},
-		OrganisationID: pgtype.UUID{Bytes: orgID, Valid: true},
-	})
-	if err != nil {
-		return repository.Organisation{}, domain.ErrDatabase
+		return repository.Organisation{}, err
 	}
 
 	return org, nil
@@ -84,7 +93,7 @@ func (s *OrgService) GetByID(ctx context.Context, orgID string) (repository.Orga
 	}
 
 	// get organisation
-	org, err := s.db.GetOrganisationById(ctx, pgtype.UUID{Bytes: parsedOrgID, Valid: true})
+	org, err := s.queries.GetOrganisationById(ctx, pgtype.UUID{Bytes: parsedOrgID, Valid: true})
 	if err != nil {
 		return repository.Organisation{}, domain.ErrNotFound
 	}
@@ -100,7 +109,7 @@ func (s *OrgService) List(ctx context.Context, userID string) ([]repository.Orga
 	}
 
 	// get all organisations the user belongs to
-	orgs, err := s.db.GetOrganisationsByUser(ctx, pgtype.UUID{Bytes: parsedUserID, Valid: true})
+	orgs, err := s.queries.GetOrganisationsByUser(ctx, pgtype.UUID{Bytes: parsedUserID, Valid: true})
 	if err != nil {
 		return nil, domain.ErrDatabase
 	}
@@ -121,7 +130,7 @@ func (s *OrgService) Update(ctx context.Context, orgID string, input UpdateOrgIn
 	}
 
 	// update organisation
-	updatedOrg, err := s.db.UpdateOrganisation(ctx, repository.UpdateOrganisationParams{
+	updatedOrg, err := s.queries.UpdateOrganisation(ctx, repository.UpdateOrganisationParams{
 		ID:   pgtype.UUID{Bytes: parsedOrgID, Valid: true},
 		Name: input.Name,
 	})
@@ -139,107 +148,8 @@ func (s *OrgService) Delete(ctx context.Context, orgID string) error {
 		return domain.ErrNotFound
 	}
 
-	// delete organisation
-	if err := s.db.DeleteOrganisation(ctx, pgtype.UUID{Bytes: parsedOrgID, Valid: true}); err != nil {
-		return domain.ErrDatabase
-	}
-
-	return nil
-}
-
-func (s *OrgService) ListMembers(ctx context.Context, orgID string) ([]repository.Member, error) {
-	// parse orgID
-	parsedOrgID, err := uuid.Parse(orgID)
-	if err != nil {
-		return nil, domain.ErrNotFound
-	}
-
-	// get all members of the organisation
-	members, err := s.db.GetMembersByOrg(ctx, pgtype.UUID{Bytes: parsedOrgID, Valid: true})
-	if err != nil {
-		return nil, domain.ErrDatabase
-	}
-
-	return members, nil
-}
-
-func (s *OrgService) UpdateMember(ctx context.Context, orgID string, memberID string, input UpdateMemberRoleInput) (repository.Member, error) {
-	// validate input
-	if err := s.validate.Struct(input); err != nil {
-		return repository.Member{}, formatValidationError(err, s.trans)
-	}
-
-	// parse memberID
-	parsedMemberID, err := uuid.Parse(memberID)
-	if err != nil {
-		return repository.Member{}, domain.ErrNotFound
-	}
-
-	// get member to verify they belong to this org
-	member, err := s.db.GetMemberById(ctx, pgtype.UUID{Bytes: parsedMemberID, Valid: true})
-	if err != nil {
-		return repository.Member{}, domain.ErrNotFound
-	}
-
-	// parse orgID
-	parsedOrgID, err := uuid.Parse(orgID)
-	if err != nil {
-		return repository.Member{}, domain.ErrNotFound
-	}
-
-	// verify member belongs to this org
-	if member.OrganisationID.Bytes != parsedOrgID {
-		return repository.Member{}, domain.ErrNotFound
-	}
-
-	// update member role
-	updatedMember, err := s.db.UpdateMember(ctx, repository.UpdateMemberParams{
-		ID:   pgtype.UUID{Bytes: parsedMemberID, Valid: true},
-		Role: input.Role,
-	})
-	if err != nil {
-		return repository.Member{}, domain.ErrDatabase
-	}
-
-	return updatedMember, nil
-}
-
-func (s *OrgService) DeleteMember(ctx context.Context, orgID string, memberID string) error {
-	// parse memberID
-	parsedMemberID, err := uuid.Parse(memberID)
-	if err != nil {
-		return domain.ErrNotFound
-	}
-
-	// get member to verify they belong to this org
-	member, err := s.db.GetMemberById(ctx, pgtype.UUID{Bytes: parsedMemberID, Valid: true})
-	if err != nil {
-		return domain.ErrNotFound
-	}
-
-	// parse orgID
-	parsedOrgID, err := uuid.Parse(orgID)
-	if err != nil {
-		return domain.ErrNotFound
-	}
-
-	// verify member belongs to this org
-	if member.OrganisationID.Bytes != parsedOrgID {
-		return domain.ErrNotFound
-	}
-
-	// enforce at least one owner or admin must remain
-	count, err := s.db.GetOwnerAndAdminCountByOrg(ctx, pgtype.UUID{Bytes: parsedOrgID, Valid: true})
-	if err != nil {
-		return domain.ErrDatabase
-	}
-
-	if count <= 1 && (member.Role == repository.MemberRoleOWNER || member.Role == repository.MemberRoleADMIN) {
-		return domain.ErrCannotRemoveLastAdmin
-	}
-
-	// delete member
-	if err := s.db.DeleteMember(ctx, pgtype.UUID{Bytes: parsedMemberID, Valid: true}); err != nil {
+	// delete organisation — cascades to members, projects, issues via FK constraints
+	if err := s.queries.DeleteOrganisation(ctx, pgtype.UUID{Bytes: parsedOrgID, Valid: true}); err != nil {
 		return domain.ErrDatabase
 	}
 
