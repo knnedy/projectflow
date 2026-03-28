@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
@@ -13,14 +14,16 @@ import (
 
 type ProjectService struct {
 	db       *repository.Queries
+	activity *ActivityService
 	validate *validator.Validate
 	trans    ut.Translator
 }
 
-func NewProjectService(db *repository.Queries) *ProjectService {
+func NewProjectService(db *repository.DB, activity *ActivityService) *ProjectService {
 	validate, trans := newValidator()
 	return &ProjectService{
-		db:       db,
+		db:       db.Queries(),
+		activity: activity,
 		validate: validate,
 		trans:    trans,
 	}
@@ -36,7 +39,22 @@ type UpdateProjectInput struct {
 	Description string `validate:"max=500"`
 }
 
-func (s *ProjectService) Create(ctx context.Context, orgID string, input CreateProjectInput) (repository.Project, error) {
+// logActivity fires activity logging in a goroutine so it never blocks the response
+func (s *ProjectService) logActivity(input LogInput) {
+	go func() {
+		if err := s.activity.Log(context.Background(), input); err != nil {
+			slog.Error("failed to log activity",
+				"error", err,
+				"action", string(input.Action),
+				"entity_type", string(input.EntityType),
+				"entity_id", input.EntityID,
+				"actor_id", input.ActorID,
+			)
+		}
+	}()
+}
+
+func (s *ProjectService) Create(ctx context.Context, orgID, actorID string, input CreateProjectInput) (repository.Project, error) {
 	// validate input
 	if err := s.validate.Struct(input); err != nil {
 		return repository.Project{}, formatValidationError(err, s.trans)
@@ -44,6 +62,16 @@ func (s *ProjectService) Create(ctx context.Context, orgID string, input CreateP
 
 	// parse org ID
 	parsedOrgID, err := uuid.Parse(orgID)
+	if err != nil {
+		return repository.Project{}, domain.ErrNotFound
+	}
+
+	// fetch the actor name for the activity log
+	parsedActorID, err := uuid.Parse(actorID)
+	if err != nil {
+		return repository.Project{}, domain.ErrNotFound
+	}
+	actor, err := s.db.GetUserById(ctx, pgtype.UUID{Bytes: parsedActorID, Valid: true})
 	if err != nil {
 		return repository.Project{}, domain.ErrNotFound
 	}
@@ -58,6 +86,19 @@ func (s *ProjectService) Create(ctx context.Context, orgID string, input CreateP
 	if err != nil {
 		return repository.Project{}, domain.ErrDatabase
 	}
+
+	// log activity
+	s.logActivity(LogInput{
+		OrgID:      orgID,
+		EntityType: repository.ActivityEntityTypePROJECT,
+		EntityID:   project.ID.String(),
+		Action:     repository.ActivityActionCREATED,
+		ActorID:    actor.ID.String(),
+		Metadata: map[string]string{
+			"project_name": project.Name,
+			"created_by":   actor.Name,
+		},
+	})
 
 	return project, nil
 }
@@ -105,7 +146,7 @@ func (s *ProjectService) List(ctx context.Context, orgID string) ([]repository.P
 	return projects, nil
 }
 
-func (s *ProjectService) Update(ctx context.Context, orgID, projectID string, input UpdateProjectInput) (repository.Project, error) {
+func (s *ProjectService) Update(ctx context.Context, orgID, projectID, actorID string, input UpdateProjectInput) (repository.Project, error) {
 	// validate input
 	if err := s.validate.Struct(input); err != nil {
 		return repository.Project{}, formatValidationError(err, s.trans)
@@ -134,8 +175,18 @@ func (s *ProjectService) Update(ctx context.Context, orgID, projectID string, in
 		return repository.Project{}, domain.ErrNotFound
 	}
 
+	// fetch the actor name for the activity log
+	parsedActorID, err := uuid.Parse(actorID)
+	if err != nil {
+		return repository.Project{}, domain.ErrNotFound
+	}
+	actor, err := s.db.GetUserById(ctx, pgtype.UUID{Bytes: parsedActorID, Valid: true})
+	if err != nil {
+		return repository.Project{}, domain.ErrNotFound
+	}
+
 	// update project
-	updated, err := s.db.UpdateProject(ctx, repository.UpdateProjectParams{
+	updatedProject, err := s.db.UpdateProject(ctx, repository.UpdateProjectParams{
 		ID:          pgtype.UUID{Bytes: parsedProjectID, Valid: true},
 		Name:        input.Name,
 		Description: pgtype.Text{String: input.Description, Valid: input.Description != ""},
@@ -144,10 +195,24 @@ func (s *ProjectService) Update(ctx context.Context, orgID, projectID string, in
 		return repository.Project{}, domain.ErrDatabase
 	}
 
-	return updated, nil
+	// log activity
+	s.logActivity(LogInput{
+		OrgID:      orgID,
+		ProjectID:  projectID,
+		EntityType: repository.ActivityEntityTypePROJECT,
+		EntityID:   projectID,
+		Action:     repository.ActivityActionUPDATED,
+		ActorID:    actor.ID.String(),
+		Metadata: map[string]string{
+			"name":       updatedProject.Name,
+			"updated_by": actor.Name,
+		},
+	})
+
+	return updatedProject, nil
 }
 
-func (s *ProjectService) Delete(ctx context.Context, orgID, projectID string) error {
+func (s *ProjectService) Delete(ctx context.Context, orgID, projectID, actorID string) error {
 	// parse project ID
 	parsedProjectID, err := uuid.Parse(projectID)
 	if err != nil {
@@ -171,10 +236,33 @@ func (s *ProjectService) Delete(ctx context.Context, orgID, projectID string) er
 		return domain.ErrNotFound
 	}
 
+	// fetch the actor name for the activity log
+	parsedActorID, err := uuid.Parse(actorID)
+	if err != nil {
+		return domain.ErrNotFound
+	}
+	actor, err := s.db.GetUserById(ctx, pgtype.UUID{Bytes: parsedActorID, Valid: true})
+	if err != nil {
+		return domain.ErrNotFound
+	}
+
 	// delete project
 	if err := s.db.DeleteProject(ctx, pgtype.UUID{Bytes: parsedProjectID, Valid: true}); err != nil {
 		return domain.ErrDatabase
 	}
+
+	// log activity
+	s.logActivity(LogInput{
+		OrgID:      orgID,
+		EntityType: repository.ActivityEntityTypePROJECT,
+		EntityID:   projectID,
+		Action:     repository.ActivityActionDELETED,
+		ActorID:    actor.ID.String(),
+		Metadata: map[string]string{
+			"project_name": project.Name,
+			"deleted_by":   actor.Name,
+		},
+	})
 
 	return nil
 }

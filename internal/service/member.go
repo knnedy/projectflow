@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	ut "github.com/go-playground/universal-translator"
@@ -17,18 +18,35 @@ const invitationDuration = 7 * 24 * time.Hour
 type MemberService struct {
 	db       *repository.DB
 	queries  *repository.Queries
+	activity *ActivityService
 	validate *validator.Validate
 	trans    ut.Translator
 }
 
-func NewMemberService(db *repository.DB) *MemberService {
+func NewMemberService(db *repository.DB, activity *ActivityService) *MemberService {
 	validate, trans := newValidator()
 	return &MemberService{
 		db:       db,
 		queries:  db.Queries(),
+		activity: activity,
 		validate: validate,
 		trans:    trans,
 	}
+}
+
+// logActivity fires activity logging in a goroutine so it never blocks the response
+func (s *MemberService) logActivity(input LogInput) {
+	go func() {
+		if err := s.activity.Log(context.Background(), input); err != nil {
+			slog.Error("failed to log activity",
+				"error", err,
+				"action", string(input.Action),
+				"entity_type", string(input.EntityType),
+				"entity_id", input.EntityID,
+				"actor_id", input.ActorID,
+			)
+		}
+	}()
 }
 
 type InviteMemberInput struct {
@@ -61,7 +79,7 @@ func (s *MemberService) ListMembers(ctx context.Context, orgID string) ([]reposi
 	return members, nil
 }
 
-func (s *MemberService) UpdateMemberRole(ctx context.Context, orgID, memberID string, input UpdateMemberRoleInput) (repository.Member, error) {
+func (s *MemberService) UpdateMemberRole(ctx context.Context, orgID, memberID, actorID string, input UpdateMemberRoleInput) (repository.Member, error) {
 	// validate input
 	if err := s.validate.Struct(input); err != nil {
 		return repository.Member{}, formatValidationError(err, s.trans)
@@ -90,6 +108,22 @@ func (s *MemberService) UpdateMemberRole(ctx context.Context, orgID, memberID st
 		return repository.Member{}, domain.ErrNotFound
 	}
 
+	// fetch user to get their name for activity log
+	user, err := s.queries.GetUserById(ctx, member.UserID)
+	if err != nil {
+		return repository.Member{}, domain.ErrNotFound
+	}
+
+	// fetch the actor name for the activity log
+	parsedActorID, err := uuid.Parse(actorID)
+	if err != nil {
+		return repository.Member{}, domain.ErrNotFound
+	}
+	actor, err := s.queries.GetUserById(ctx, pgtype.UUID{Bytes: parsedActorID, Valid: true})
+	if err != nil {
+		return repository.Member{}, domain.ErrNotFound
+	}
+
 	// update member role
 	updatedMember, err := s.queries.UpdateMember(ctx, repository.UpdateMemberParams{
 		ID:   pgtype.UUID{Bytes: parsedMemberID, Valid: true},
@@ -99,10 +133,26 @@ func (s *MemberService) UpdateMemberRole(ctx context.Context, orgID, memberID st
 		return repository.Member{}, domain.ErrDatabase
 	}
 
+	// log activity
+	s.logActivity(LogInput{
+		OrgID:      orgID,
+		EntityType: repository.ActivityEntityTypeMEMBER,
+		EntityID:   member.ID.String(),
+		Action:     repository.ActivityActionROLECHANGED,
+		ActorID:    actor.ID.String(),
+		Metadata: map[string]string{
+			"member_name":  user.Name,
+			"member_email": user.Email,
+			"from":         string(member.Role),
+			"to":           string(updatedMember.Role),
+			"updated_by":   actor.Name,
+		},
+	})
+
 	return updatedMember, nil
 }
 
-func (s *MemberService) DeleteMember(ctx context.Context, orgID, memberID string) error {
+func (s *MemberService) DeleteMember(ctx context.Context, orgID, memberID, actorID string) error {
 	// parse memberID
 	parsedMemberID, err := uuid.Parse(memberID)
 	if err != nil {
@@ -136,10 +186,41 @@ func (s *MemberService) DeleteMember(ctx context.Context, orgID, memberID string
 		return domain.ErrCannotRemoveLastAdmin
 	}
 
+	// fetch user to get their name for activity log
+	user, err := s.queries.GetUserById(ctx, member.UserID)
+	if err != nil {
+		return domain.ErrNotFound
+	}
+
+	// fetch the actor name for the activity log
+	parsedActorID, err := uuid.Parse(actorID)
+	if err != nil {
+		return domain.ErrNotFound
+	}
+	actor, err := s.queries.GetUserById(ctx, pgtype.UUID{Bytes: parsedActorID, Valid: true})
+	if err != nil {
+		return domain.ErrNotFound
+	}
+
 	// delete member
 	if err := s.queries.DeleteMember(ctx, pgtype.UUID{Bytes: parsedMemberID, Valid: true}); err != nil {
 		return domain.ErrDatabase
 	}
+
+	// log activity
+	s.logActivity(LogInput{
+		OrgID:      orgID,
+		EntityType: repository.ActivityEntityTypeMEMBER,
+		EntityID:   member.ID.String(),
+		Action:     repository.ActivityActionMEMBERREMOVED,
+		ActorID:    actor.ID.String(),
+		Metadata: map[string]string{
+			"member_name":  user.Name,
+			"member_email": user.Email,
+			"role":         string(member.Role),
+			"deleted_by":   actor.Name,
+		},
+	})
 
 	return nil
 }
@@ -181,10 +262,30 @@ func (s *MemberService) LeaveOrg(ctx context.Context, orgID, userID string) erro
 		return domain.ErrCannotRemoveLastAdmin
 	}
 
+	// fetch user to get their name for activity log
+	user, err := s.queries.GetUserById(ctx, member.UserID)
+	if err != nil {
+		return domain.ErrNotFound
+	}
+
 	// remove member from org
 	if err := s.queries.DeleteMember(ctx, member.ID); err != nil {
 		return domain.ErrDatabase
 	}
+
+	// log activity — actor is the user leaving
+	s.logActivity(LogInput{
+		OrgID:      orgID,
+		EntityType: repository.ActivityEntityTypeMEMBER,
+		EntityID:   member.ID.String(),
+		Action:     repository.ActivityActionMEMBERLEFT,
+		ActorID:    userID,
+		Metadata: map[string]string{
+			"member_name":  user.Name,
+			"member_email": user.Email,
+			"role":         string(member.Role),
+		},
+	})
 
 	return nil
 }
@@ -252,7 +353,7 @@ func (s *MemberService) InviteMember(ctx context.Context, orgID, invitedByUserID
 	}, nil
 }
 
-func (s *MemberService) AcceptInvitation(ctx context.Context, userID string, token string) (repository.Member, error) {
+func (s *MemberService) AcceptInvitation(ctx context.Context, userID, token string) (repository.Member, error) {
 	// validate token is present
 	if token == "" {
 		return repository.Member{}, domain.ErrInvalidToken
@@ -309,6 +410,20 @@ func (s *MemberService) AcceptInvitation(ctx context.Context, userID string, tok
 	if err != nil {
 		return repository.Member{}, err
 	}
+
+	// log activity — actor is the user who accepted the invitation
+	s.logActivity(LogInput{
+		OrgID:      invitation.OrganisationID.String(),
+		EntityType: repository.ActivityEntityTypeMEMBER,
+		EntityID:   member.ID.String(),
+		Action:     repository.ActivityActionMEMBERJOINED,
+		ActorID:    userID,
+		Metadata: map[string]string{
+			"member_name":  user.Name,
+			"member_email": user.Email,
+			"role":         string(invitation.Role),
+		},
+	})
 
 	return member, nil
 }
