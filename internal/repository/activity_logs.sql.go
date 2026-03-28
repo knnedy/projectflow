@@ -68,17 +68,19 @@ const listActivityLogsByEntity = `-- name: ListActivityLogsByEntity :many
 SELECT id, organisation_id, project_id, entity_type, entity_id, action, actor_id, metadata, created_at
 FROM "activity_logs"
 WHERE "entity_id" = $1
+AND ("created_at" < $2::timestamp OR $2::timestamp IS NULL)
 ORDER BY "created_at" DESC
-LIMIT $2
+LIMIT $3
 `
 
 type ListActivityLogsByEntityParams struct {
 	EntityID pgtype.UUID
+	Column2  pgtype.Timestamp
 	Limit    int32
 }
 
 func (q *Queries) ListActivityLogsByEntity(ctx context.Context, arg ListActivityLogsByEntityParams) ([]ActivityLog, error) {
-	rows, err := q.db.Query(ctx, listActivityLogsByEntity, arg.EntityID, arg.Limit)
+	rows, err := q.db.Query(ctx, listActivityLogsByEntity, arg.EntityID, arg.Column2, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -111,17 +113,19 @@ const listActivityLogsByOrg = `-- name: ListActivityLogsByOrg :many
 SELECT id, organisation_id, project_id, entity_type, entity_id, action, actor_id, metadata, created_at
 FROM "activity_logs"
 WHERE "organisation_id" = $1
+AND ("created_at" < $2::timestamp OR $2::timestamp IS NULL)
 ORDER BY "created_at" DESC
-LIMIT $2
+LIMIT $3
 `
 
 type ListActivityLogsByOrgParams struct {
 	OrganisationID pgtype.UUID
+	Column2        pgtype.Timestamp
 	Limit          int32
 }
 
 func (q *Queries) ListActivityLogsByOrg(ctx context.Context, arg ListActivityLogsByOrgParams) ([]ActivityLog, error) {
-	rows, err := q.db.Query(ctx, listActivityLogsByOrg, arg.OrganisationID, arg.Limit)
+	rows, err := q.db.Query(ctx, listActivityLogsByOrg, arg.OrganisationID, arg.Column2, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -154,17 +158,19 @@ const listActivityLogsByProject = `-- name: ListActivityLogsByProject :many
 SELECT id, organisation_id, project_id, entity_type, entity_id, action, actor_id, metadata, created_at
 FROM "activity_logs"
 WHERE "project_id" = $1
+AND ("created_at" < $2::timestamp OR $2::timestamp IS NULL)
 ORDER BY "created_at" DESC
-LIMIT $2
+LIMIT $3
 `
 
 type ListActivityLogsByProjectParams struct {
 	ProjectID pgtype.UUID
+	Column2   pgtype.Timestamp
 	Limit     int32
 }
 
 func (q *Queries) ListActivityLogsByProject(ctx context.Context, arg ListActivityLogsByProjectParams) ([]ActivityLog, error) {
-	rows, err := q.db.Query(ctx, listActivityLogsByProject, arg.ProjectID, arg.Limit)
+	rows, err := q.db.Query(ctx, listActivityLogsByProject, arg.ProjectID, arg.Column2, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
