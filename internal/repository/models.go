@@ -11,6 +11,101 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type ActivityAction string
+
+const (
+	ActivityActionCREATED         ActivityAction = "CREATED"
+	ActivityActionUPDATED         ActivityAction = "UPDATED"
+	ActivityActionDELETED         ActivityAction = "DELETED"
+	ActivityActionSTATUSCHANGED   ActivityAction = "STATUS_CHANGED"
+	ActivityActionPRIORITYCHANGED ActivityAction = "PRIORITY_CHANGED"
+	ActivityActionASSIGNED        ActivityAction = "ASSIGNED"
+	ActivityActionUNASSIGNED      ActivityAction = "UNASSIGNED"
+	ActivityActionROLECHANGED     ActivityAction = "ROLE_CHANGED"
+	ActivityActionMEMBERJOINED    ActivityAction = "MEMBER_JOINED"
+	ActivityActionMEMBERLEFT      ActivityAction = "MEMBER_LEFT"
+	ActivityActionMEMBERREMOVED   ActivityAction = "MEMBER_REMOVED"
+)
+
+func (e *ActivityAction) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ActivityAction(s)
+	case string:
+		*e = ActivityAction(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ActivityAction: %T", src)
+	}
+	return nil
+}
+
+type NullActivityAction struct {
+	ActivityAction ActivityAction
+	Valid          bool // Valid is true if ActivityAction is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullActivityAction) Scan(value interface{}) error {
+	if value == nil {
+		ns.ActivityAction, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ActivityAction.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullActivityAction) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ActivityAction), nil
+}
+
+type ActivityEntityType string
+
+const (
+	ActivityEntityTypeISSUE        ActivityEntityType = "ISSUE"
+	ActivityEntityTypePROJECT      ActivityEntityType = "PROJECT"
+	ActivityEntityTypeMEMBER       ActivityEntityType = "MEMBER"
+	ActivityEntityTypeORGANISATION ActivityEntityType = "ORGANISATION"
+)
+
+func (e *ActivityEntityType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ActivityEntityType(s)
+	case string:
+		*e = ActivityEntityType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ActivityEntityType: %T", src)
+	}
+	return nil
+}
+
+type NullActivityEntityType struct {
+	ActivityEntityType ActivityEntityType
+	Valid              bool // Valid is true if ActivityEntityType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullActivityEntityType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ActivityEntityType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ActivityEntityType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullActivityEntityType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ActivityEntityType), nil
+}
+
 type IssuePriority string
 
 const (
@@ -145,12 +240,15 @@ func (ns NullMemberRole) Value() (driver.Value, error) {
 }
 
 type ActivityLog struct {
-	ID        pgtype.UUID
-	Action    string
-	UserID    pgtype.UUID
-	ProjectID pgtype.UUID
-	TargetID  pgtype.UUID
-	Timestamp pgtype.Timestamp
+	ID             pgtype.UUID
+	OrganisationID pgtype.UUID
+	ProjectID      pgtype.UUID
+	EntityType     ActivityEntityType
+	EntityID       pgtype.UUID
+	Action         ActivityAction
+	ActorID        pgtype.UUID
+	Metadata       []byte
+	CreatedAt      pgtype.Timestamp
 }
 
 type Comment struct {

@@ -1,18 +1,35 @@
 -- name: CreateActivityLog :one
 INSERT INTO "activity_logs" (
     "id",
-    "action",
-    "user_id",
+    "organisation_id",
     "project_id",
-    "target_id",
-    "timestamp"
+    "entity_type",
+    "entity_id",
+    "action",
+    "actor_id",
+    "metadata"
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
+    $1, $2, $3, $4, $5, $6, $7, $8
 )
 RETURNING *;
 
--- name: ListActivityLogsByProjectId :many
+-- name: ListActivityLogsByOrg :many
+SELECT *
+FROM "activity_logs"
+WHERE "organisation_id" = $1
+ORDER BY "created_at" DESC
+LIMIT $2;
+
+-- name: ListActivityLogsByProject :many
 SELECT *
 FROM "activity_logs"
 WHERE "project_id" = $1
-ORDER BY "timestamp" DESC;
+ORDER BY "created_at" DESC
+LIMIT $2;
+
+-- name: ListActivityLogsByEntity :many
+SELECT *
+FROM "activity_logs"
+WHERE "entity_id" = $1
+ORDER BY "created_at" DESC
+LIMIT $2;

@@ -14,56 +14,71 @@ import (
 const createActivityLog = `-- name: CreateActivityLog :one
 INSERT INTO "activity_logs" (
     "id",
-    "action",
-    "user_id",
+    "organisation_id",
     "project_id",
-    "target_id",
-    "timestamp"
+    "entity_type",
+    "entity_id",
+    "action",
+    "actor_id",
+    "metadata"
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
+    $1, $2, $3, $4, $5, $6, $7, $8
 )
-RETURNING id, action, user_id, project_id, target_id, timestamp
+RETURNING id, organisation_id, project_id, entity_type, entity_id, action, actor_id, metadata, created_at
 `
 
 type CreateActivityLogParams struct {
-	ID        pgtype.UUID
-	Action    string
-	UserID    pgtype.UUID
-	ProjectID pgtype.UUID
-	TargetID  pgtype.UUID
-	Timestamp pgtype.Timestamp
+	ID             pgtype.UUID
+	OrganisationID pgtype.UUID
+	ProjectID      pgtype.UUID
+	EntityType     ActivityEntityType
+	EntityID       pgtype.UUID
+	Action         ActivityAction
+	ActorID        pgtype.UUID
+	Metadata       []byte
 }
 
 func (q *Queries) CreateActivityLog(ctx context.Context, arg CreateActivityLogParams) (ActivityLog, error) {
 	row := q.db.QueryRow(ctx, createActivityLog,
 		arg.ID,
-		arg.Action,
-		arg.UserID,
+		arg.OrganisationID,
 		arg.ProjectID,
-		arg.TargetID,
-		arg.Timestamp,
+		arg.EntityType,
+		arg.EntityID,
+		arg.Action,
+		arg.ActorID,
+		arg.Metadata,
 	)
 	var i ActivityLog
 	err := row.Scan(
 		&i.ID,
-		&i.Action,
-		&i.UserID,
+		&i.OrganisationID,
 		&i.ProjectID,
-		&i.TargetID,
-		&i.Timestamp,
+		&i.EntityType,
+		&i.EntityID,
+		&i.Action,
+		&i.ActorID,
+		&i.Metadata,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
-const listActivityLogsByProjectId = `-- name: ListActivityLogsByProjectId :many
-SELECT id, action, user_id, project_id, target_id, timestamp
+const listActivityLogsByEntity = `-- name: ListActivityLogsByEntity :many
+SELECT id, organisation_id, project_id, entity_type, entity_id, action, actor_id, metadata, created_at
 FROM "activity_logs"
-WHERE "project_id" = $1
-ORDER BY "timestamp" DESC
+WHERE "entity_id" = $1
+ORDER BY "created_at" DESC
+LIMIT $2
 `
 
-func (q *Queries) ListActivityLogsByProjectId(ctx context.Context, projectID pgtype.UUID) ([]ActivityLog, error) {
-	rows, err := q.db.Query(ctx, listActivityLogsByProjectId, projectID)
+type ListActivityLogsByEntityParams struct {
+	EntityID pgtype.UUID
+	Limit    int32
+}
+
+func (q *Queries) ListActivityLogsByEntity(ctx context.Context, arg ListActivityLogsByEntityParams) ([]ActivityLog, error) {
+	rows, err := q.db.Query(ctx, listActivityLogsByEntity, arg.EntityID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -73,11 +88,100 @@ func (q *Queries) ListActivityLogsByProjectId(ctx context.Context, projectID pgt
 		var i ActivityLog
 		if err := rows.Scan(
 			&i.ID,
-			&i.Action,
-			&i.UserID,
+			&i.OrganisationID,
 			&i.ProjectID,
-			&i.TargetID,
-			&i.Timestamp,
+			&i.EntityType,
+			&i.EntityID,
+			&i.Action,
+			&i.ActorID,
+			&i.Metadata,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listActivityLogsByOrg = `-- name: ListActivityLogsByOrg :many
+SELECT id, organisation_id, project_id, entity_type, entity_id, action, actor_id, metadata, created_at
+FROM "activity_logs"
+WHERE "organisation_id" = $1
+ORDER BY "created_at" DESC
+LIMIT $2
+`
+
+type ListActivityLogsByOrgParams struct {
+	OrganisationID pgtype.UUID
+	Limit          int32
+}
+
+func (q *Queries) ListActivityLogsByOrg(ctx context.Context, arg ListActivityLogsByOrgParams) ([]ActivityLog, error) {
+	rows, err := q.db.Query(ctx, listActivityLogsByOrg, arg.OrganisationID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ActivityLog
+	for rows.Next() {
+		var i ActivityLog
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganisationID,
+			&i.ProjectID,
+			&i.EntityType,
+			&i.EntityID,
+			&i.Action,
+			&i.ActorID,
+			&i.Metadata,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listActivityLogsByProject = `-- name: ListActivityLogsByProject :many
+SELECT id, organisation_id, project_id, entity_type, entity_id, action, actor_id, metadata, created_at
+FROM "activity_logs"
+WHERE "project_id" = $1
+ORDER BY "created_at" DESC
+LIMIT $2
+`
+
+type ListActivityLogsByProjectParams struct {
+	ProjectID pgtype.UUID
+	Limit     int32
+}
+
+func (q *Queries) ListActivityLogsByProject(ctx context.Context, arg ListActivityLogsByProjectParams) ([]ActivityLog, error) {
+	rows, err := q.db.Query(ctx, listActivityLogsByProject, arg.ProjectID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ActivityLog
+	for rows.Next() {
+		var i ActivityLog
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrganisationID,
+			&i.ProjectID,
+			&i.EntityType,
+			&i.EntityID,
+			&i.Action,
+			&i.ActorID,
+			&i.Metadata,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
