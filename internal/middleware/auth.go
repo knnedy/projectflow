@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/knnedy/projectflow/internal/domain"
-	"github.com/knnedy/projectflow/internal/handler"
+	"github.com/knnedy/projectflow/internal/response"
 	"github.com/knnedy/projectflow/internal/token"
 )
 
@@ -32,21 +32,21 @@ func (am *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 		// extract token from Authorization header
 		authheader := r.Header.Get("Authorization")
 		if authheader == "" {
-			handler.WriteError(w, domain.ErrMissingToken)
+			response.WriteError(w, domain.ErrMissingToken)
 			return
 		}
 
 		// header must be in format: Bearer <token>
 		parts := strings.SplitN(authheader, " ", 2)
 		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-			handler.WriteError(w, domain.ErrMalformedToken)
+			response.WriteError(w, domain.ErrMalformedToken)
 			return
 		}
 
 		// validate access token
 		claims, err := am.tokens.ValidateAccessToken(parts[1])
 		if err != nil {
-			handler.WriteError(w, domain.ErrInvalidToken)
+			response.WriteError(w, domain.ErrInvalidToken)
 			return
 		}
 

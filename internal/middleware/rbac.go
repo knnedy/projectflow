@@ -5,8 +5,8 @@ import (
 	"slices"
 
 	"github.com/knnedy/projectflow/internal/domain"
-	"github.com/knnedy/projectflow/internal/handler"
 	"github.com/knnedy/projectflow/internal/repository"
+	"github.com/knnedy/projectflow/internal/response"
 )
 
 // RequireRole returns a middleware that enforces the authenticated member
@@ -17,13 +17,13 @@ func RequireRole(allowedRoles ...repository.MemberRole) func(http.Handler) http.
 			// get member from context — ResolveOrg middleware must run first
 			member, ok := GetMember(r.Context())
 			if !ok {
-				handler.WriteError(w, domain.ErrUnauthorized)
+				response.WriteError(w, domain.ErrUnauthorized)
 				return
 			}
 
 			// check if member's role is in allowed roles
 			if !hasRole(member.Role, allowedRoles) {
-				handler.WriteError(w, domain.ErrForbidden)
+				response.WriteError(w, domain.ErrForbidden)
 				return
 			}
 

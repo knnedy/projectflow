@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/knnedy/projectflow/internal/domain"
-	"github.com/knnedy/projectflow/internal/handler"
 	"github.com/knnedy/projectflow/internal/repository"
+	"github.com/knnedy/projectflow/internal/response"
 )
 
 const (
@@ -33,14 +33,14 @@ func (om *OrgMiddleware) ResolveOrg(next http.Handler) http.Handler {
 		// Extract orgID from the URL param
 		orgIDStr := chi.URLParam(r, "orgID")
 		if orgIDStr == "" {
-			handler.WriteError(w, domain.ErrNotFound)
+			response.WriteError(w, domain.ErrNotFound)
 			return
 		}
 
 		// Parse orgID into uuid
 		parsedOrgID, err := uuid.Parse(orgIDStr)
 		if err != nil {
-			handler.WriteError(w, domain.ErrNotFound)
+			response.WriteError(w, domain.ErrNotFound)
 			return
 		}
 
@@ -49,21 +49,21 @@ func (om *OrgMiddleware) ResolveOrg(next http.Handler) http.Handler {
 		// Verify org exists
 		org, err := om.db.GetOrganisationById(r.Context(), orgID)
 		if err != nil {
-			handler.WriteError(w, domain.ErrNotFound)
+			response.WriteError(w, domain.ErrNotFound)
 			return
 		}
 
 		// Get authenticated user ID from context - auth middleware should have already verified must run first
 		userIDStr, ok := GetUserID(r.Context())
 		if !ok {
-			handler.WriteError(w, domain.ErrUnauthorized)
+			response.WriteError(w, domain.ErrUnauthorized)
 			return
 		}
 
 		// Parse userID into uuid
 		parsedUserID, err := uuid.Parse(userIDStr)
 		if err != nil {
-			handler.WriteError(w, domain.ErrUnauthorized)
+			response.WriteError(w, domain.ErrUnauthorized)
 			return
 		}
 
@@ -73,7 +73,7 @@ func (om *OrgMiddleware) ResolveOrg(next http.Handler) http.Handler {
 			OrganisationID: orgID,
 		})
 		if err != nil {
-			handler.WriteError(w, domain.ErrNotOrgMember)
+			response.WriteError(w, domain.ErrNotOrgMember)
 			return
 		}
 
