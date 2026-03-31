@@ -54,7 +54,7 @@ func (s *OrgService) logActivity(input LogInput) {
 	}()
 }
 
-func (s *OrgService) Create(ctx context.Context, userID, actorID string, input CreateOrgInput) (repository.Organisation, error) {
+func (s *OrgService) Create(ctx context.Context, userID string, input CreateOrgInput) (repository.Organisation, error) {
 	// validate input
 	if err := s.validate.Struct(input); err != nil {
 		return repository.Organisation{}, formatValidationError(err, s.trans)
@@ -70,11 +70,7 @@ func (s *OrgService) Create(ctx context.Context, userID, actorID string, input C
 	var org repository.Organisation
 
 	// fetch the actor name for the activity log
-	parsedActorID, err := uuid.Parse(actorID)
-	if err != nil {
-		return repository.Organisation{}, domain.ErrNotFound
-	}
-	actor, err := s.queries.GetUserById(ctx, pgtype.UUID{Bytes: parsedActorID, Valid: true})
+	actor, err := s.queries.GetUserById(ctx, pgtype.UUID{Bytes: parsedUserID, Valid: true})
 	if err != nil {
 		return repository.Organisation{}, domain.ErrNotFound
 	}
