@@ -30,15 +30,6 @@ type OrgResponse struct {
 	UpdatedAt *string `json:"updated_at,omitempty"`
 }
 
-type MemberResponse struct {
-	ID             string  `json:"id"`
-	Role           string  `json:"role"`
-	UserID         string  `json:"user_id"`
-	OrganisationID string  `json:"organisation_id"`
-	CreatedAt      string  `json:"created_at"`
-	UpdatedAt      *string `json:"updated_at,omitempty"`
-}
-
 type InviteResponse struct {
 	InviteLink string `json:"invite_link"`
 	Email      string `json:"email"`
@@ -59,23 +50,6 @@ func toOrgResponse(org repository.Organisation) OrgResponse {
 		OwnerID:   org.OwnerID.String(),
 		CreatedAt: org.CreatedAt.Time.Format(time.RFC3339),
 		UpdatedAt: updatedAt,
-	}
-}
-
-func toMemberResponse(member repository.Member) MemberResponse {
-	var updatedAt *string
-	if member.UpdatedAt.Valid {
-		t := member.UpdatedAt.Time.Format(time.RFC3339)
-		updatedAt = &t
-	}
-
-	return MemberResponse{
-		ID:             member.ID.String(),
-		Role:           string(member.Role),
-		UserID:         member.UserID.String(),
-		OrganisationID: member.OrganisationID.String(),
-		CreatedAt:      member.CreatedAt.Time.Format(time.RFC3339),
-		UpdatedAt:      updatedAt,
 	}
 }
 
@@ -451,37 +425,4 @@ func (h *OrgHandler) AcceptInvitation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.WriteJSON(w, http.StatusOK, toMemberResponse(member))
-}
-
-// LeaveOrg godoc
-// @Summary Leave an organisation
-// @Tags organisations
-// @Produce json
-// @Param orgID path string true "Organisation ID"
-// @Success 200
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Router /organisations/{orgID}/members/me [delete]
-func (h *OrgHandler) LeaveOrg(w http.ResponseWriter, r *http.Request) {
-	// get org ID from context — resolved by org middleware
-	orgID, ok := middleware.GetOrgID(r.Context())
-	if !ok {
-		response.WriteError(w, domain.ErrNotFound)
-		return
-	}
-
-	// get authenticated user ID from context
-	userID, ok := middleware.GetUserID(r.Context())
-	if !ok {
-		response.WriteError(w, domain.ErrUnauthorized)
-		return
-	}
-
-	// leave organisation
-	if err := h.member.LeaveOrg(r.Context(), orgID, userID); err != nil {
-		response.WriteError(w, err)
-		return
-	}
-
-	response.WriteJSON(w, http.StatusOK, nil)
 }
