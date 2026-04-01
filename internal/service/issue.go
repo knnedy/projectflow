@@ -96,13 +96,13 @@ func (s *IssueService) logActivity(input LogInput) {
 	}()
 }
 
-func (s *IssueService) Create(ctx context.Context, projectID, reporterID, actorID string, input CreateIssueInput) (repository.Issue, error) {
+func (s *IssueService) Create(ctx context.Context, projectID, actorID string, input CreateIssueInput) (repository.Issue, error) {
 	// validate input
 	if err := s.validate.Struct(input); err != nil {
 		return repository.Issue{}, formatValidationError(err, s.trans)
 	}
 
-	// parse project ID
+	// parse projectID
 	parsedProjectID, err := uuid.Parse(projectID)
 	if err != nil {
 		return repository.Issue{}, domain.ErrNotFound
@@ -112,12 +112,6 @@ func (s *IssueService) Create(ctx context.Context, projectID, reporterID, actorI
 	project, err := s.db.GetProjectById(ctx, pgtype.UUID{Bytes: parsedProjectID, Valid: true})
 	if err != nil {
 		return repository.Issue{}, domain.ErrNotFound
-	}
-
-	// parse reporter ID
-	parsedReporterID, err := uuid.Parse(reporterID)
-	if err != nil {
-		return repository.Issue{}, domain.ErrUnauthorized
 	}
 
 	// handle optional assignee
@@ -130,7 +124,7 @@ func (s *IssueService) Create(ctx context.Context, projectID, reporterID, actorI
 		assigneeID = pgtype.UUID{Bytes: parsedAssigneeID, Valid: true}
 	}
 
-	// fetch the actor name for the activity log
+	// fetch the actor name for the activity log - actorID also servers as the reporterID
 	parsedActorID, err := uuid.Parse(actorID)
 	if err != nil {
 		return repository.Issue{}, domain.ErrNotFound
@@ -148,7 +142,7 @@ func (s *IssueService) Create(ctx context.Context, projectID, reporterID, actorI
 		Status:      repository.IssueStatusBACKLOG,
 		Priority:    input.Priority,
 		ProjectID:   pgtype.UUID{Bytes: parsedProjectID, Valid: true},
-		ReporterID:  pgtype.UUID{Bytes: parsedReporterID, Valid: true},
+		ReporterID:  pgtype.UUID{Bytes: parsedActorID, Valid: true},
 		AssigneeID:  assigneeID,
 	})
 	if err != nil {
