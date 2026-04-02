@@ -60,8 +60,8 @@ func clearRefreshTokenCookie(w http.ResponseWriter) {
 // @Produce json
 // @Param body body service.RegisterInput true "Register input"
 // @Success 201 {object} authDataResponse
-// @Failure 409 {object} errorResponse
-// @Failure 422 {object} errorResponse
+// @Failure 409 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
 // @Router /auth/register [post]
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var input service.RegisterInput
@@ -87,8 +87,8 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param body body service.LoginInput true "Login input"
 // @Success 200 {object} authDataResponse
-// @Failure 401 {object} errorResponse
-// @Failure 422 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
 // @Router /auth/login [post]
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var input service.LoginInput
@@ -112,7 +112,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Tags auth
 // @Produce json
 // @Success 200 {object} authDataResponse
-// @Failure 401 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
 // @Router /auth/refresh [post]
 func (h *AuthHandler) RefreshAccessToken(w http.ResponseWriter, r *http.Request) {
 	// read refresh token from httponly cookie
@@ -137,7 +137,7 @@ func (h *AuthHandler) RefreshAccessToken(w http.ResponseWriter, r *http.Request)
 // @Tags auth
 // @Produce json
 // @Success 200
-// @Failure 401 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
 // @Router /auth/logout [post]
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	// read refresh token from httponly cookie

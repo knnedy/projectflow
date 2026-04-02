@@ -1,0 +1,1642 @@
+basePath: /api/v1
+definitions:
+  handler.ActivityLogResponse:
+    properties:
+      action:
+        type: string
+      actor_id:
+        type: string
+      created_at:
+        type: string
+      entity_id:
+        type: string
+      entity_type:
+        type: string
+      id:
+        type: string
+      metadata: {}
+      organisation_id:
+        type: string
+      project_id:
+        type: string
+    type: object
+  handler.ActivityPageResponse:
+    properties:
+      has_more:
+        type: boolean
+      logs:
+        items:
+          $ref: '#/definitions/handler.ActivityLogResponse'
+        type: array
+      next_cursor:
+        type: string
+    type: object
+  handler.CommentResponse:
+    properties:
+      author_id:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      issue_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.ErrorDetail:
+    properties:
+      code:
+        type: string
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  handler.ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/handler.ErrorDetail'
+      success:
+        type: boolean
+    type: object
+  handler.InviteResponse:
+    properties:
+      email:
+        type: string
+      expires_at:
+        type: string
+      invite_link:
+        type: string
+      role:
+        type: string
+    type: object
+  handler.IssueResponse:
+    properties:
+      assignee_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      priority:
+        type: string
+      project_id:
+        type: string
+      reporter_id:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.MemberResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      organisation_id:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  handler.OrgResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.ProjectResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      organisation_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  handler.authDataResponse:
+    properties:
+      access_token:
+        type: string
+      user:
+        $ref: '#/definitions/handler.UserResponse'
+    type: object
+  repository.IssuePriority:
+    enum:
+    - NO_PRIORITY
+    - LOW
+    - MEDIUM
+    - HIGH
+    type: string
+    x-enum-varnames:
+    - IssuePriorityNOPRIORITY
+    - IssuePriorityLOW
+    - IssuePriorityMEDIUM
+    - IssuePriorityHIGH
+  repository.IssueStatus:
+    enum:
+    - BACKLOG
+    - TODO
+    - IN_PROGRESS
+    - IN_REVIEW
+    - DONE
+    - CANCELLED
+    type: string
+    x-enum-varnames:
+    - IssueStatusBACKLOG
+    - IssueStatusTODO
+    - IssueStatusINPROGRESS
+    - IssueStatusINREVIEW
+    - IssueStatusDONE
+    - IssueStatusCANCELLED
+  repository.MemberRole:
+    enum:
+    - OWNER
+    - ADMIN
+    - MEMBER
+    type: string
+    x-enum-varnames:
+    - MemberRoleOWNER
+    - MemberRoleADMIN
+    - MemberRoleMEMBER
+  service.CreateCommentInput:
+    properties:
+      content:
+        maxLength: 2000
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
+  service.CreateIssueInput:
+    properties:
+      assigneeID:
+        type: string
+      description:
+        maxLength: 2000
+        type: string
+      priority:
+        allOf:
+        - $ref: '#/definitions/repository.IssuePriority'
+        enum:
+        - NO_PRIORITY
+        - LOW
+        - MEDIUM
+        - HIGH
+      title:
+        maxLength: 200
+        minLength: 2
+        type: string
+    required:
+    - priority
+    - title
+    type: object
+  service.CreateOrgInput:
+    properties:
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  service.CreateProjectInput:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  service.InviteMemberInput:
+    properties:
+      email:
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/repository.MemberRole'
+        enum:
+        - ADMIN
+        - MEMBER
+    required:
+    - email
+    - role
+    type: object
+  service.LoginInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  service.RegisterInput:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      password:
+        maxLength: 100
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  service.UpdateCommentInput:
+    properties:
+      content:
+        maxLength: 2000
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
+  service.UpdateIssueDetailsInput:
+    properties:
+      assigneeID:
+        type: string
+      description:
+        maxLength: 2000
+        type: string
+      priority:
+        allOf:
+        - $ref: '#/definitions/repository.IssuePriority'
+        enum:
+        - NO_PRIORITY
+        - LOW
+        - MEDIUM
+        - HIGH
+      title:
+        maxLength: 200
+        minLength: 2
+        type: string
+    required:
+    - priority
+    - title
+    type: object
+  service.UpdateIssueStatusInput:
+    properties:
+      status:
+        allOf:
+        - $ref: '#/definitions/repository.IssueStatus'
+        enum:
+        - BACKLOG
+        - TODO
+        - IN_PROGRESS
+        - IN_REVIEW
+        - DONE
+        - CANCELLED
+    required:
+    - status
+    type: object
+  service.UpdateMemberRoleInput:
+    properties:
+      role:
+        allOf:
+        - $ref: '#/definitions/repository.MemberRole'
+        enum:
+        - OWNER
+        - ADMIN
+        - MEMBER
+    required:
+    - role
+    type: object
+  service.UpdateOrgInput:
+    properties:
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  service.UpdatePasswordInput:
+    properties:
+      currentPassword:
+        minLength: 8
+        type: string
+      newPassword:
+        maxLength: 100
+        minLength: 8
+        type: string
+    required:
+    - currentPassword
+    - newPassword
+    type: object
+  service.UpdateProfileInput:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  service.UpdateProjectInput:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Project management API
+  title: ProjectFlow API
+  version: "1.0"
+paths:
+  /activity/{entityID}:
+    get:
+      parameters:
+      - description: Entity ID
+        in: path
+        name: entityID
+        required: true
+        type: string
+      - description: Cursor for pagination
+        in: query
+        name: cursor
+        type: string
+      - description: Number of logs to return
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ActivityPageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List activity logs for a specific entity
+      tags:
+      - activity
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.authDataResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Logout
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.authDataResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Refresh access token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Register input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.RegisterInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.authDataResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - auth
+  /invitations/accept:
+    post:
+      parameters:
+      - description: Invitation token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MemberResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Accept an organisation invitation
+      tags:
+      - organisations
+  /organisations:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.OrgResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List all organisations for the authenticated user
+      tags:
+      - organisations
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create organisation input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.CreateOrgInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.OrgResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Create a new organisation
+      tags:
+      - organisations
+  /organisations/{orgID}:
+    delete:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Delete an organisation
+      tags:
+      - organisations
+    get:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.OrgResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Get an organisation by ID
+      tags:
+      - organisations
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Update organisation input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdateOrgInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.OrgResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Update an organisation
+      tags:
+      - organisations
+  /organisations/{orgID}/activity:
+    get:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Cursor for pagination
+        in: query
+        name: cursor
+        type: string
+      - description: Number of logs to return
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ActivityPageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List activity logs for an organisation
+      tags:
+      - activity
+  /organisations/{orgID}/invitations:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Invite member input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.InviteMemberInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.InviteResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Invite a member to an organisation
+      tags:
+      - organisations
+  /organisations/{orgID}/members:
+    get:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.MemberResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List all members of an organisation
+      tags:
+      - organisations
+  /organisations/{orgID}/members/{memberID}:
+    delete:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Member ID
+        in: path
+        name: memberID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Remove a member from an organisation
+      tags:
+      - organisations
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Member ID
+        in: path
+        name: memberID
+        required: true
+        type: string
+      - description: Update member role input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdateMemberRoleInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.MemberResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Update a member's role
+      tags:
+      - organisations
+  /organisations/{orgID}/members/me:
+    delete:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Leave an organisation
+      tags:
+      - members
+  /organisations/{orgID}/projects:
+    get:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.ProjectResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List all projects in an organisation
+      tags:
+      - projects
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Create project input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.CreateProjectInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.ProjectResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Create a new project
+      tags:
+      - projects
+  /organisations/{orgID}/projects/{projectID}:
+    delete:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Delete a project
+      tags:
+      - projects
+    get:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ProjectResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Get a project by ID
+      tags:
+      - projects
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Update project input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdateProjectInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ProjectResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Update a project
+      tags:
+      - projects
+  /organisations/{orgID}/projects/{projectID}/activity:
+    get:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Cursor for pagination
+        in: query
+        name: cursor
+        type: string
+      - description: Number of logs to return
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ActivityPageResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List activity logs for a project
+      tags:
+      - activity
+  /organisations/{orgID}/projects/{projectID}/issues:
+    get:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.IssueResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List all issues in a project
+      tags:
+      - issues
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Create issue input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.CreateIssueInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.IssueResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Create a new issue
+      tags:
+      - issues
+  /organisations/{orgID}/projects/{projectID}/issues/{issueID}:
+    delete:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Issue ID
+        in: path
+        name: issueID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Delete an issue
+      tags:
+      - issues
+    get:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Issue ID
+        in: path
+        name: issueID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.IssueResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Get an issue by ID
+      tags:
+      - issues
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Issue ID
+        in: path
+        name: issueID
+        required: true
+        type: string
+      - description: Update issue details input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdateIssueDetailsInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.IssueResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Update issue details
+      tags:
+      - issues
+  /organisations/{orgID}/projects/{projectID}/issues/{issueID}/comments:
+    get:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Issue ID
+        in: path
+        name: issueID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.CommentResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List all comments on an issue
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Issue ID
+        in: path
+        name: issueID
+        required: true
+        type: string
+      - description: Create comment input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.CreateCommentInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.CommentResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Create a comment on an issue
+      tags:
+      - comments
+  /organisations/{orgID}/projects/{projectID}/issues/{issueID}/comments/{commentID}:
+    delete:
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Issue ID
+        in: path
+        name: issueID
+        required: true
+        type: string
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Delete a comment
+      tags:
+      - comments
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Issue ID
+        in: path
+        name: issueID
+        required: true
+        type: string
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      - description: Update comment input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdateCommentInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.CommentResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Update a comment
+      tags:
+      - comments
+  /organisations/{orgID}/projects/{projectID}/issues/{issueID}/status:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Organisation ID
+        in: path
+        name: orgID
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: projectID
+        required: true
+        type: string
+      - description: Issue ID
+        in: path
+        name: issueID
+        required: true
+        type: string
+      - description: Update issue status input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdateIssueStatusInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.IssueResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Update issue status
+      tags:
+      - issues
+  /users/me:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Delete authenticated user
+      tags:
+      - users
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Get authenticated user
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Update profile input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdateProfileInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Update authenticated user profile
+      tags:
+      - users
+  /users/me/password:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Update password input
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdatePasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Update authenticated user password
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

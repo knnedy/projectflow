@@ -50,7 +50,7 @@ func toUserResponse(user repository.User) UserResponse {
 // @Tags users
 // @Produce json
 // @Success 200 {object} UserResponse
-// @Failure 401 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
 // @Router /users/me [get]
 func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 	// get authenticated user ID from context
@@ -77,8 +77,8 @@ func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param body body service.UpdateProfileInput true "Update profile input"
 // @Success 200 {object} UserResponse
-// @Failure 401 {object} errorResponse
-// @Failure 422 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
 // @Router /users/me [patch]
 func (h *UserHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 	// get authenticated user ID from context
@@ -112,8 +112,8 @@ func (h *UserHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param body body service.UpdatePasswordInput true "Update password input"
 // @Success 200
-// @Failure 401 {object} errorResponse
-// @Failure 422 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
 // @Router /users/me/password [patch]
 func (h *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	// get authenticated user ID from context
@@ -144,7 +144,7 @@ func (h *UserHandler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 // @Tags users
 // @Produce json
 // @Success 200
-// @Failure 401 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
 // @Router /users/me [delete]
 func (h *UserHandler) DeleteMe(w http.ResponseWriter, r *http.Request) {
 	// get authenticated user ID from context

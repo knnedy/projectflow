@@ -57,9 +57,9 @@ func toCommentResponse(comment repository.Comment) CommentResponse {
 // @Param issueID path string true "Issue ID"
 // @Param body body service.CreateCommentInput true "Create comment input"
 // @Success 201 {object} CommentResponse
-// @Failure 401 {object} errorResponse
-// @Failure 404 {object} errorResponse
-// @Failure 422 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
 // @Router /organisations/{orgID}/projects/{projectID}/issues/{issueID}/comments [post]
 func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// get authenticated userID from context
@@ -101,8 +101,8 @@ func (h *CommentHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Param projectID path string true "Project ID"
 // @Param issueID path string true "Issue ID"
 // @Success 200 {array} CommentResponse
-// @Failure 401 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /organisations/{orgID}/projects/{projectID}/issues/{issueID}/comments [get]
 func (h *CommentHandler) List(w http.ResponseWriter, r *http.Request) {
 	// get issueID from URL
@@ -138,10 +138,10 @@ func (h *CommentHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Param commentID path string true "Comment ID"
 // @Param body body service.UpdateCommentInput true "Update comment input"
 // @Success 200 {object} CommentResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
-// @Failure 422 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
 // @Router /organisations/{orgID}/projects/{projectID}/issues/{issueID}/comments/{commentID} [patch]
 func (h *CommentHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// get authenticated userID from context
@@ -191,9 +191,9 @@ func (h *CommentHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Param issueID path string true "Issue ID"
 // @Param commentID path string true "Comment ID"
 // @Success 200
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /organisations/{orgID}/projects/{projectID}/issues/{issueID}/comments/{commentID} [delete]
 func (h *CommentHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	// get authenticated userID from context

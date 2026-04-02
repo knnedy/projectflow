@@ -55,9 +55,9 @@ func toProjectResponse(project repository.Project) ProjectResponse {
 // @Param orgID path string true "Organisation ID"
 // @Param body body service.CreateProjectInput true "Create project input"
 // @Success 201 {object} ProjectResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 422 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
 // @Router /organisations/{orgID}/projects [post]
 func (h *ProjectHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// get authenticated userID from context
@@ -98,8 +98,8 @@ func (h *ProjectHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Param orgID path string true "Organisation ID"
 // @Param projectID path string true "Project ID"
 // @Success 200 {object} ProjectResponse
-// @Failure 401 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /organisations/{orgID}/projects/{projectID} [get]
 func (h *ProjectHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	// get organisationID from context
@@ -132,8 +132,8 @@ func (h *ProjectHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param orgID path string true "Organisation ID"
 // @Success 200 {array} ProjectResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
 // @Router /organisations/{orgID}/projects [get]
 func (h *ProjectHandler) List(w http.ResponseWriter, r *http.Request) {
 	// get organisationID from context
@@ -167,10 +167,10 @@ func (h *ProjectHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Param projectID path string true "Project ID"
 // @Param body body service.UpdateProjectInput true "Update project input"
 // @Success 200 {object} ProjectResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
-// @Failure 422 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
 // @Router /organisations/{orgID}/projects/{projectID} [patch]
 func (h *ProjectHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// get authenticated userID from context
@@ -218,9 +218,9 @@ func (h *ProjectHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Param orgID path string true "Organisation ID"
 // @Param projectID path string true "Project ID"
 // @Success 200
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /organisations/{orgID}/projects/{projectID} [delete]
 func (h *ProjectHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	// get authenticated userID from context

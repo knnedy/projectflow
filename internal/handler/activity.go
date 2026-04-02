@@ -23,15 +23,15 @@ func NewActivityHandler(activity *service.ActivityService) *ActivityHandler {
 }
 
 type ActivityLogResponse struct {
-	ID             string          `json:"id"`
-	OrganisationID string          `json:"organisation_id"`
-	ProjectID      *string         `json:"project_id,omitempty"`
-	EntityType     string          `json:"entity_type"`
-	EntityID       string          `json:"entity_id"`
-	Action         string          `json:"action"`
-	ActorID        string          `json:"actor_id"`
-	Metadata       json.RawMessage `json:"metadata,omitempty"`
-	CreatedAt      string          `json:"created_at"`
+	ID             string  `json:"id"`
+	OrganisationID string  `json:"organisation_id"`
+	ProjectID      *string `json:"project_id,omitempty"`
+	EntityType     string  `json:"entity_type"`
+	EntityID       string  `json:"entity_id"`
+	Action         string  `json:"action"`
+	ActorID        string  `json:"actor_id"`
+	Metadata       any     `json:"metadata,omitempty"`
+	CreatedAt      string  `json:"created_at"`
 }
 
 type ActivityPageResponse struct {
@@ -57,7 +57,10 @@ func toActivityLogResponse(log repository.ActivityLog) ActivityLogResponse {
 	}
 
 	if log.Metadata != nil {
-		r.Metadata = json.RawMessage(log.Metadata)
+		var meta any
+		if err := json.Unmarshal(log.Metadata, &meta); err == nil {
+			r.Metadata = meta
+		}
 	}
 
 	return r
@@ -109,9 +112,9 @@ func parsePaginationParams(r *http.Request) (*time.Time, int32) {
 // @Param cursor query string false "Cursor for pagination"
 // @Param limit query int false "Number of logs to return"
 // @Success 200 {object} ActivityPageResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /organisations/{orgID}/activity [get]
 func (h *ActivityHandler) ListByOrg(w http.ResponseWriter, r *http.Request) {
 	// get org ID from context — resolved by org middleware
@@ -143,9 +146,9 @@ func (h *ActivityHandler) ListByOrg(w http.ResponseWriter, r *http.Request) {
 // @Param cursor query string false "Cursor for pagination"
 // @Param limit query int false "Number of logs to return"
 // @Success 200 {object} ActivityPageResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /organisations/{orgID}/projects/{projectID}/activity [get]
 func (h *ActivityHandler) ListByProject(w http.ResponseWriter, r *http.Request) {
 	// get project ID from URL
@@ -176,8 +179,8 @@ func (h *ActivityHandler) ListByProject(w http.ResponseWriter, r *http.Request) 
 // @Param cursor query string false "Cursor for pagination"
 // @Param limit query int false "Number of logs to return"
 // @Success 200 {object} ActivityPageResponse
-// @Failure 401 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /activity/{entityID} [get]
 func (h *ActivityHandler) ListByEntity(w http.ResponseWriter, r *http.Request) {
 	// get entity ID from URL

@@ -14,9 +14,9 @@ build:
 run:
 	go run $(MAIN_PATH)
 
-# build and run
-dev: build
-	./bin/$(BINARY_NAME)
+# dev
+dev: 
+	air
 
 # test
 test:

@@ -60,8 +60,8 @@ func toOrgResponse(org repository.Organisation) OrgResponse {
 // @Produce json
 // @Param body body service.CreateOrgInput true "Create organisation input"
 // @Success 201 {object} OrgResponse
-// @Failure 401 {object} errorResponse
-// @Failure 422 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
 // @Router /organisations [post]
 func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// get authenticated user ID from context
@@ -93,7 +93,7 @@ func (h *OrgHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Tags organisations
 // @Produce json
 // @Success 200 {array} OrgResponse
-// @Failure 401 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
 // @Router /organisations [get]
 func (h *OrgHandler) List(w http.ResponseWriter, r *http.Request) {
 	// get authenticated user ID from context
@@ -124,8 +124,8 @@ func (h *OrgHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param orgID path string true "Organisation ID"
 // @Success 200 {object} OrgResponse
-// @Failure 401 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /organisations/{orgID} [get]
 func (h *OrgHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	// get org ID from context — resolved by org middleware
@@ -153,10 +153,10 @@ func (h *OrgHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Param orgID path string true "Organisation ID"
 // @Param body body service.UpdateOrgInput true "Update organisation input"
 // @Success 200 {object} OrgResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
-// @Failure 422 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
 // @Router /organisations/{orgID} [patch]
 func (h *OrgHandler) Update(w http.ResponseWriter, r *http.Request) {
 	// get org ID from context — resolved by org middleware
@@ -196,9 +196,9 @@ func (h *OrgHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param orgID path string true "Organisation ID"
 // @Success 200
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /organisations/{orgID} [delete]
 func (h *OrgHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	// get org ID from context — resolved by org middleware
@@ -223,8 +223,8 @@ func (h *OrgHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param orgID path string true "Organisation ID"
 // @Success 200 {array} MemberResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
 // @Router /organisations/{orgID}/members [get]
 func (h *OrgHandler) ListMembers(w http.ResponseWriter, r *http.Request) {
 	// get org ID from context — resolved by org middleware
@@ -258,9 +258,9 @@ func (h *OrgHandler) ListMembers(w http.ResponseWriter, r *http.Request) {
 // @Param memberID path string true "Member ID"
 // @Param body body service.UpdateMemberRoleInput true "Update member role input"
 // @Success 200 {object} MemberResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /organisations/{orgID}/members/{memberID} [patch]
 func (h *OrgHandler) UpdateMember(w http.ResponseWriter, r *http.Request) {
 	// get org ID from context — resolved by org middleware
@@ -308,9 +308,9 @@ func (h *OrgHandler) UpdateMember(w http.ResponseWriter, r *http.Request) {
 // @Param orgID path string true "Organisation ID"
 // @Param memberID path string true "Member ID"
 // @Success 200
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /organisations/{orgID}/members/{memberID} [delete]
 func (h *OrgHandler) DeleteMember(w http.ResponseWriter, r *http.Request) {
 	// get org ID from context — resolved by org middleware
@@ -351,9 +351,9 @@ func (h *OrgHandler) DeleteMember(w http.ResponseWriter, r *http.Request) {
 // @Param orgID path string true "Organisation ID"
 // @Param body body service.InviteMemberInput true "Invite member input"
 // @Success 201 {object} InviteResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 409 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 409 {object} ErrorResponse
 // @Router /organisations/{orgID}/invitations [post]
 func (h *OrgHandler) InviteMember(w http.ResponseWriter, r *http.Request) {
 	// get org ID from context — resolved by org middleware
@@ -398,9 +398,9 @@ func (h *OrgHandler) InviteMember(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param token query string true "Invitation token"
 // @Success 200 {object} MemberResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /invitations/accept [post]
 func (h *OrgHandler) AcceptInvitation(w http.ResponseWriter, r *http.Request) {
 	// get authenticated user ID from context

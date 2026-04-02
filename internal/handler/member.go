@@ -53,8 +53,8 @@ func toMemberResponse(member repository.Member) MemberResponse {
 // @Produce json
 // @Param orgID path string true "Organisation ID"
 // @Success 200 {array} MemberResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
 // @Router /organisations/{orgID}/members [get]
 func (h *MemberHandler) List(w http.ResponseWriter, r *http.Request) {
 	// get organisationID from context
@@ -88,9 +88,9 @@ func (h *MemberHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Param memberID path string true "Member ID"
 // @Param body body service.UpdateMemberRoleInput true "Update member role input"
 // @Success 200 {object} MemberResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /organisations/{orgID}/members/{memberID} [patch]
 func (h *MemberHandler) UpdateMemberRole(w http.ResponseWriter, r *http.Request) {
 	// get authenticated userID from context
@@ -138,9 +138,9 @@ func (h *MemberHandler) UpdateMemberRole(w http.ResponseWriter, r *http.Request)
 // @Param orgID path string true "Organisation ID"
 // @Param memberID path string true "Member ID"
 // @Success 200
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Router /organisations/{orgID}/members/{memberID} [delete]
 func (h *MemberHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	// get authenticated userID from context
@@ -179,8 +179,8 @@ func (h *MemberHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param orgID path string true "Organisation ID"
 // @Success 200
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
 // @Router /organisations/{orgID}/members/me [delete]
 func (h *MemberHandler) LeaveOrg(w http.ResponseWriter, r *http.Request) {
 	// get org ID from context — resolved by org middleware

@@ -5,8 +5,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 
-	// _ "github.com/knnedy/projectflow/docs"
+	_ "github.com/knnedy/projectflow/docs"
 	"github.com/knnedy/projectflow/internal/handler"
 	"github.com/knnedy/projectflow/internal/middleware"
 	"github.com/knnedy/projectflow/internal/repository"
@@ -34,9 +35,9 @@ func New(
 	r.Use(middleware.Logger)
 
 	// swagger docs
-	// r.Get("/docs/*", httpSwagger.Handler(
-	// 	httpSwagger.URL("/docs/doc.json"),
-	// ))
+	r.Get("/docs/*", httpSwagger.Handler(
+		httpSwagger.URL("/docs/doc.json"),
+	))
 
 	// init middleware
 	authMw := middleware.NewAuthMiddleware(tokens)
