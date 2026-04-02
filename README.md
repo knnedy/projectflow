@@ -171,8 +171,7 @@ Access tokens expire after 15 minutes. Use the refresh endpoint to get a new one
 ## Issue Status Flow
 
 ```
-BACKLOG → TODO → IN_PROGRESS → IN_REVIEW → DONE
-                                          → CANCELLED
+BACKLOG → TODO → IN_PROGRESS → IN_REVIEW → DONE → CANCELLED
 ```
 
 Status transitions are strictly enforced. Only owners and admins can move issues to `TODO`, `DONE` or `CANCELLED`.
