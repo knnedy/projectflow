@@ -175,4 +175,4 @@ BACKLOG → TODO → IN_PROGRESS → IN_REVIEW → DONE
                                          → CANCELLED
 ```
 
-Status transitions are strictly enforced. Only owners and admins can move issues to `TODO`, `DONE` or `CANCELLED`.
+Status transitions are strictly enforced. Only owners and admins can move issues to `TODO`, `DONE` or `CANCELLED`. Members can only move issues between `TODO`, `IN_PROGRESS` and `IN_REVIEW`.
